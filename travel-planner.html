@@ -251,7 +251,7 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import {
   getAuth, GoogleAuthProvider,
-  signInWithRedirect, getRedirectResult,
+  signInWithRedirect, signInWithPopup, getRedirectResult,
   signOut as fbSignOut, onAuthStateChanged
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 import {
@@ -261,7 +261,7 @@ import {
 
 const firebaseConfig = {
   apiKey: "AIzaSyDEOJUy0oUgAztwYF4Q5MnhUB_EPid_drc",
-  authDomain: "yunihyun0803-lgtm.github.io",
+  authDomain: "travel-planner-63bfb.firebaseapp.com",
   projectId: "travel-planner-63bfb",
   storageBucket: "travel-planner-63bfb.firebasestorage.app",
   messagingSenderId: "1054948023849",
@@ -286,7 +286,7 @@ window._fbGetDocs    = getDocs;
 window.doSignIn = async function() {
   document.getElementById('loginLoading').style.display = 'block';
   const provider = new GoogleAuthProvider();
-  try { await signInWithRedirect(auth, provider); }
+  try { await signInWithPopup(auth, provider); } catch(popupErr) { await signInWithRedirect(auth, provider); }
   catch(e) { console.error(e); document.getElementById('loginLoading').style.display = 'none'; }
 };
 
