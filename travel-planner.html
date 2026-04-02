@@ -7,31 +7,23 @@
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
 <style>
   :root {
-    --yellow: #FEE500;
-    --yellow-dark: #E6CE00;
-    --bg: #F7F7F8;
-    --white: #FFFFFF;
-    --text: #1A1A1A;
-    --text-sub: #6B6B6B;
-    --text-muted: #ABABAB;
-    --border: #E5E5E5;
-    --shadow: 0 2px 12px rgba(0,0,0,0.08);
-    --shadow-lg: 0 8px 32px rgba(0,0,0,0.15);
-    --radius: 12px;
+    --yellow: #FEE500; --yellow-dark: #E6CE00; --bg: #F7F7F8; --white: #FFFFFF;
+    --text: #1A1A1A; --text-sub: #6B6B6B; --text-muted: #ABABAB;
+    --border: #E5E5E5; --shadow: 0 2px 12px rgba(0,0,0,0.08);
+    --shadow-lg: 0 8px 32px rgba(0,0,0,0.15); --radius: 12px;
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body { font-family: 'Noto Sans KR', sans-serif; background: var(--bg); color: var(--text); height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
 
-  /* ── 로그인 화면 ── */
   #loginScreen { position: fixed; inset: 0; background: var(--white); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 9999; gap: 20px; }
   #loginScreen.hidden { display: none; }
   .login-logo { width: 64px; height: 64px; background: var(--yellow); border-radius: 18px; display: flex; align-items: center; justify-content: center; font-size: 32px; }
   .login-title { font-size: 26px; font-weight: 700; }
   .login-sub { font-size: 14px; color: var(--text-sub); }
   .btn-google { display: flex; align-items: center; gap: 10px; padding: 13px 28px; border-radius: 10px; border: 1px solid var(--border); background: var(--white); font-family: inherit; font-size: 15px; font-weight: 500; cursor: pointer; transition: all 0.15s; box-shadow: var(--shadow); }
-  .btn-google:hover { background: var(--bg); box-shadow: var(--shadow-lg); }
+  .btn-google:hover { background: var(--bg); }
+  .login-loading { font-size: 13px; color: var(--text-muted); display: none; }
 
-  /* ── 여행 목록 화면 ── */
   #tripListScreen { position: fixed; inset: 0; background: var(--bg); display: flex; flex-direction: column; z-index: 9000; }
   #tripListScreen.hidden { display: none; }
   .trip-list-header { background: var(--white); border-bottom: 1px solid var(--border); padding: 0 24px; height: 60px; display: flex; align-items: center; justify-content: space-between; }
@@ -42,7 +34,7 @@
   .trip-list-user span { font-size: 13px; color: var(--text-sub); }
   .trip-list-body { flex: 1; overflow-y: auto; padding: 32px 24px; max-width: 800px; margin: 0 auto; width: 100%; }
   .trip-list-title { font-size: 20px; font-weight: 700; margin-bottom: 20px; }
-  .trip-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 16px; }
+  .trip-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 16px; }
   .trip-card { background: var(--white); border-radius: 16px; padding: 20px; border: 1px solid var(--border); cursor: pointer; transition: all 0.15s; position: relative; }
   .trip-card:hover { box-shadow: var(--shadow); transform: translateY(-2px); }
   .trip-card-emoji { font-size: 28px; margin-bottom: 10px; }
@@ -53,14 +45,12 @@
   .trip-card-delete:hover { background: #fee; color: #e85d4a; }
   .trip-card-new { border: 2px dashed var(--border); background: transparent; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; min-height: 120px; color: var(--text-muted); font-size: 13px; }
   .trip-card-new:hover { border-color: var(--yellow); color: var(--text); background: #FFFDE7; }
-  .trip-card-new-icon { font-size: 28px; }
 
-  /* ── 헤더 ── */
   header { background: var(--white); border-bottom: 1px solid var(--border); padding: 0 16px 0 24px; height: 56px; display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; }
   .logo { display: flex; align-items: center; gap: 8px; font-weight: 700; font-size: 16px; }
   .logo-icon { width: 30px; height: 30px; background: var(--yellow); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 15px; }
-  .trip-name-display { font-size: 13px; color: var(--text-sub); padding: 3px 10px; border-radius: 6px; cursor: pointer; transition: all 0.15s; }
-  .trip-name-display:hover { background: var(--bg); }
+  .back-btn { font-size: 13px; color: var(--text-sub); padding: 3px 10px; border-radius: 6px; cursor: pointer; transition: all 0.15s; border: none; background: none; font-family: inherit; }
+  .back-btn:hover { background: var(--bg); }
   .header-right { display: flex; align-items: center; gap: 8px; }
   .save-status { font-size: 11px; color: var(--text-muted); display: flex; align-items: center; gap: 4px; }
   .save-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--text-muted); }
@@ -71,17 +61,15 @@
   .btn-yellow { background: var(--yellow); border-color: var(--yellow); color: var(--text); }
   .user-avatar { width: 28px; height: 28px; border-radius: 50%; border: 2px solid var(--border); cursor: pointer; }
 
-  /* ── Day 탭 ── */
   .day-tabs { background: var(--white); border-bottom: 1px solid var(--border); padding: 0 24px; display: flex; align-items: center; gap: 4px; height: 46px; flex-shrink: 0; overflow-x: auto; }
-  .day-tab { padding: 5px 14px; border-radius: 20px; border: none; background: transparent; cursor: pointer; font-family: inherit; font-size: 12px; font-weight: 500; color: var(--text-sub); white-space: nowrap; transition: all 0.15s; display: flex; align-items: center; gap: 6px; }
+  .day-tab { padding: 5px 14px; border-radius: 20px; border: none; background: transparent; cursor: pointer; font-family: inherit; font-size: 12px; font-weight: 500; color: var(--text-sub); white-space: nowrap; transition: all 0.15s; display: flex; align-items: center; gap: 5px; }
   .day-tab:hover { background: var(--bg); }
   .day-tab.active { background: var(--yellow); color: var(--text); }
-  .day-tab-date { font-size: 10px; opacity: 0.7; cursor: pointer; padding: 1px 4px; border-radius: 4px; }
+  .day-tab-date { font-size: 10px; opacity: 0.75; padding: 1px 4px; border-radius: 4px; }
   .day-tab.active .day-tab-date:hover { background: rgba(0,0,0,0.1); }
   .btn-add-day { padding: 5px 12px; border-radius: 20px; border: 1px dashed var(--border); background: transparent; cursor: pointer; font-size: 12px; color: var(--text-muted); font-family: inherit; transition: all 0.15s; white-space: nowrap; }
   .btn-add-day:hover { border-color: var(--yellow); color: var(--text); }
 
-  /* ── 메인 ── */
   .main { display: flex; flex: 1; overflow: hidden; }
   .timeline-panel { width: 460px; flex-shrink: 0; display: flex; flex-direction: column; background: var(--bg); border-right: 1px solid var(--border); overflow: hidden; }
   .timeline-header { padding: 14px 20px 10px; display: flex; align-items: center; gap: 8px; flex-shrink: 0; font-size: 13px; font-weight: 700; }
@@ -112,50 +100,38 @@
   .cat-이동 { background: #EDFAF3; color: #52C788; }
   .memo-input { flex: 1; border: none; background: transparent; font-family: inherit; font-size: 11px; color: var(--text-sub); outline: none; min-width: 0; }
   .memo-input::placeholder { color: var(--text-muted); }
-
   .transport-row { margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--bg); }
   .transport-btns { display: flex; align-items: center; gap: 5px; margin-bottom: 6px; flex-wrap: wrap; }
   .transport-label { font-size: 10px; color: var(--text-muted); }
   .transport-btn { padding: 2px 8px; border-radius: 20px; border: 1px solid var(--border); background: transparent; font-family: inherit; font-size: 10px; cursor: pointer; color: var(--text-sub); transition: all 0.15s; }
   .transport-btn.active-transport { background: var(--text); color: var(--white); border-color: var(--text); }
-
   .time-summary { display: flex; align-items: center; gap: 5px; margin-bottom: 5px; }
   .time-badge { display: inline-flex; align-items: center; gap: 3px; padding: 3px 8px; border-radius: 20px; font-size: 11px; font-weight: 500; }
-  .time-badge.walk    { background: #EDFAF3; color: #52C788; }
-  .time-badge.car     { background: #EBF4FF; color: #4A90D9; }
-  .time-badge.bus     { background: #FEF0EE; color: #E85D4A; }
+  .time-badge.walk { background: #EDFAF3; color: #52C788; }
+  .time-badge.car { background: #EBF4FF; color: #4A90D9; }
+  .time-badge.bus { background: #FEF0EE; color: #E85D4A; }
   .time-badge.loading { background: var(--bg); color: var(--text-muted); animation: pulse 1.2s infinite; }
-  .time-badge.error   { background: var(--bg); color: var(--text-muted); }
+  .time-badge.error { background: var(--bg); color: var(--text-muted); }
   @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
-
   .transit-detail { margin-top: 5px; border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
   .transit-step { display: flex; align-items: flex-start; gap: 7px; padding: 6px 8px; font-size: 11px; border-bottom: 1px solid var(--bg); }
   .transit-step:last-child { border-bottom: none; }
-  .transit-step-icon { width: 20px; height: 20px; border-radius: 5px; display: flex; align-items: center; justify-content: center; font-size: 10px; flex-shrink: 0; margin-top: 1px; }
-  .icon-walk { background: #EDFAF3; }
-  .icon-bus  { background: #FEF0EE; }
-  .icon-sub  { background: #EBF4FF; }
+  .transit-step-icon { width: 20px; height: 20px; border-radius: 5px; display: flex; align-items: center; justify-content: center; font-size: 10px; flex-shrink: 0; }
+  .icon-walk { background: #EDFAF3; } .icon-bus { background: #FEF0EE; } .icon-sub { background: #EBF4FF; }
   .transit-step-info { flex: 1; line-height: 1.4; }
   .transit-step-name { font-weight: 600; color: var(--text); font-size: 11px; }
   .transit-step-desc { color: var(--text-sub); font-size: 10px; }
   .transit-step-time { font-size: 10px; color: var(--text-muted); white-space: nowrap; }
-
   .btn-add-stop { width: 100%; padding: 10px; border: 1px dashed var(--border); border-radius: var(--radius); background: transparent; font-family: inherit; font-size: 12px; color: var(--text-muted); cursor: pointer; transition: all 0.15s; margin-top: 4px; }
   .btn-add-stop:hover { border-color: var(--yellow); color: var(--text); background: #FFFDE7; }
-
   .timeline-footer { padding: 10px 20px; border-top: 1px solid var(--border); background: var(--white); display: flex; justify-content: space-between; align-items: center; flex-shrink: 0; font-size: 12px; }
-  .footer-label { color: var(--text-sub); }
-  .footer-value { font-weight: 700; }
-
+  .footer-label { color: var(--text-sub); } .footer-value { font-weight: 700; }
   .map-panel { flex: 1; position: relative; }
   #kakaoMap { width: 100%; height: 100%; }
-
-  /* ── 범례 ── */
   .map-legend { position: absolute; bottom: 16px; left: 16px; background: var(--white); border-radius: 10px; padding: 10px 14px; box-shadow: var(--shadow); font-size: 11px; display: flex; flex-direction: column; gap: 5px; }
   .legend-item { display: flex; align-items: center; gap: 6px; }
   .legend-line { width: 24px; height: 3px; border-radius: 2px; }
 
-  /* ── 모달 (공통) ── */
   .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.35); z-index: 2000; display: none; align-items: center; justify-content: center; }
   .modal-overlay.show { display: flex; }
   .modal { background: var(--white); border-radius: 16px; padding: 24px; width: 340px; box-shadow: var(--shadow-lg); }
@@ -170,7 +146,6 @@
 </head>
 <body>
 
-<!-- ── 로그인 화면 ── -->
 <div id="loginScreen">
   <div class="login-logo">🗺️</div>
   <div class="login-title">여행 플래너</div>
@@ -184,15 +159,12 @@
     </svg>
     Google로 로그인
   </button>
+  <div class="login-loading" id="loginLoading">로그인 중...</div>
 </div>
 
-<!-- ── 여행 목록 화면 ── -->
 <div id="tripListScreen" class="hidden">
   <div class="trip-list-header">
-    <div class="logo">
-      <div class="logo-icon">🗺️</div>
-      내 여행 목록
-    </div>
+    <div class="logo"><div class="logo-icon">🗺️</div>내 여행 목록</div>
     <div class="trip-list-user">
       <img id="tlUserAvatar" src="" alt="">
       <span id="tlUserName"></span>
@@ -205,45 +177,33 @@
   </div>
 </div>
 
-<!-- ── 메인 앱 ── -->
-<header>
-  <div style="display:flex;align-items:center;gap:10px;">
-    <div class="logo">
-      <div class="logo-icon">🗺️</div>
-      여행 플래너
-    </div>
-    <span class="trip-name-display" id="tripNameDisplay" onclick="goTripList()">← 목록으로</span>
+<header style="display:none">
+  <div style="display:flex;align-items:center;gap:8px;">
+    <div class="logo"><div class="logo-icon">🗺️</div>여행 플래너</div>
+    <button class="back-btn" onclick="goTripList()">← 목록</button>
+    <span id="tripNameDisplay" style="font-size:13px;color:var(--text-sub);font-weight:500;"></span>
   </div>
   <div class="header-right">
-    <div class="save-status">
-      <div class="save-dot" id="saveDot"></div>
-      <span id="saveText"></span>
-    </div>
+    <div class="save-status"><div class="save-dot" id="saveDot"></div><span id="saveText"></span></div>
     <button class="btn" onclick="exportCSV()">⬇ CSV</button>
-    <img class="user-avatar" id="userAvatar" src="" alt="" onclick="doSignOut()" title="클릭하면 로그아웃">
+    <img class="user-avatar" id="userAvatar" src="" alt="" title="로그아웃하려면 클릭" onclick="doSignOut()">
   </div>
 </header>
 
-<div class="day-tabs" id="dayTabs"></div>
+<div class="day-tabs" id="dayTabs" style="display:none"></div>
 
-<div class="main">
+<div class="main" style="display:none">
   <div class="timeline-panel">
-    <div class="timeline-header">
-      📋 일정 타임라인
-      <span class="stop-count" id="stopCount">0개 장소</span>
-    </div>
+    <div class="timeline-header">📋 일정 타임라인<span class="stop-count" id="stopCount">0개</span></div>
     <div class="timeline-scroll" id="timelineScroll"></div>
-    <div class="timeline-footer">
-      <span class="footer-label">총 장소</span>
-      <span class="footer-value" id="totalCount">0개</span>
-    </div>
+    <div class="timeline-footer"><span class="footer-label">총 장소</span><span class="footer-value" id="totalCount">0개</span></div>
   </div>
   <div class="map-panel">
     <div id="kakaoMap"></div>
-    <div class="map-legend" id="mapLegend" style="display:none">
+    <div class="map-legend">
       <div class="legend-item"><div class="legend-line" style="background:#4A90D9"></div><span>자동차</span></div>
-      <div class="legend-item"><div class="legend-line" style="background:#52C788;border-top:2px dotted #52C788;height:0"></div><span>도보</span></div>
-      <div class="legend-item"><div class="legend-line" style="background:none;border-top:3px dashed #E85D4A;height:0;width:24px"></div><span>대중교통</span></div>
+      <div class="legend-item"><div class="legend-line" style="background:#52C788"></div><span>도보</span></div>
+      <div class="legend-item"><div class="legend-line" style="background:#E85D4A"></div><span>대중교통</span></div>
     </div>
   </div>
 </div>
@@ -273,13 +233,13 @@
   </div>
 </div>
 
-<!-- 여행 추가 모달 -->
+<!-- 새 여행 모달 -->
 <div class="modal-overlay" id="newTripModal">
   <div class="modal">
     <h3>✈️ 새 여행 만들기</h3>
     <div class="emoji-picker" id="emojiPicker"></div>
     <input type="text" id="newTripName" placeholder="여행 이름 (예: 제주도 여행)">
-    <input type="date" id="newTripStartDate" placeholder="시작 날짜">
+    <input type="date" id="newTripStartDate">
     <div class="modal-actions">
       <button class="btn" onclick="closeModal('newTripModal')">취소</button>
       <button class="btn btn-yellow" onclick="confirmNewTrip()">만들기</button>
@@ -287,13 +247,17 @@
   </div>
 </div>
 
-<!-- Firebase SDK -->
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getAuth, GoogleAuthProvider, signInWithPopup, signOut as fbSignOut, onAuthStateChanged }
-  from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-import { getFirestore, collection, doc, getDoc, getDocs, setDoc, deleteDoc }
-  from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import {
+  getAuth, GoogleAuthProvider,
+  signInWithRedirect, getRedirectResult,
+  signOut as fbSignOut, onAuthStateChanged
+} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+import {
+  getFirestore, collection, doc,
+  getDoc, getDocs, setDoc, deleteDoc
+} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyDEOJUy0oUgAztwYF4Q5MnhUB_EPid_drc",
@@ -310,17 +274,28 @@ const db   = getFirestore(app);
 
 window._auth = auth;
 window._db   = db;
-window._fbSignOut = fbSignOut;
-window._GoogleAuthProvider = GoogleAuthProvider;
-window._fbDoc = doc;
-window._fbGetDoc = getDoc;
-window._fbSetDoc = setDoc;
-window._fbDeleteDoc = deleteDoc;
+window._fbSignOut    = () => fbSignOut(auth);
+window._fbDoc        = doc;
+window._fbGetDoc     = getDoc;
+window._fbSetDoc     = setDoc;
+window._fbDeleteDoc  = deleteDoc;
 window._fbCollection = collection;
-window._fbGetDocs = getDocs;
+window._fbGetDocs    = getDocs;
 
-window._fbSignInWithPopup = (provider) => signInWithPopup(auth, provider);
+// 리다이렉트 로그인
+window.doSignIn = async function() {
+  document.getElementById('loginLoading').style.display = 'block';
+  const provider = new GoogleAuthProvider();
+  try { await signInWithRedirect(auth, provider); }
+  catch(e) { console.error(e); document.getElementById('loginLoading').style.display = 'none'; }
+};
 
+// 리다이렉트 결과 처리
+getRedirectResult(auth).then(result => {
+  if (result?.user) console.log('리다이렉트 로그인 성공');
+}).catch(e => console.error('리다이렉트 결과 오류:', e));
+
+// 인증 상태 감지
 onAuthStateChanged(auth, async (user) => {
   if (user) {
     window._currentUser = user;
@@ -333,103 +308,84 @@ onAuthStateChanged(auth, async (user) => {
   } else {
     window._currentUser = null;
     document.getElementById('loginScreen').classList.remove('hidden');
+    document.getElementById('loginLoading').style.display = 'none';
     document.getElementById('tripListScreen').classList.add('hidden');
-    document.getElementById('mapLegend').style.display = 'none';
+    document.querySelector('header').style.display = 'none';
+    document.getElementById('dayTabs').style.display = 'none';
+    document.querySelector('.main').style.display = 'none';
   }
 });
 </script>
 
 <script>
-// ══════════════════════════════════════════
-//  🔑 카카오 키
-// ══════════════════════════════════════════
 const KAKAO_REST_KEY = 'df3b8dcb49a5702a7d40fae940ad3e17';
 const KAKAO_JS_KEY   = '3a651c6517e513f7e0819dd46ae3ee23';
 const ODSAY_KEY      = 'V1hY1ycdWsswHGFswy3HJQ';
 
-// ══════════════════════════════════════════
-//  STATE
-// ══════════════════════════════════════════
 let currentTripId = null;
-let state = { tripName:'', emoji:'✈️', days: [], currentDayIdx: 0 };
+let state = { tripName:'', emoji:'✈️', days:[], currentDayIdx:0 };
 let timeCache = {}, routeCache = {};
 let map = null, routePolylines = [], markerOverlays = [];
-let saveTimer = null;
-let editingDayIdx = null;
+let saveTimer = null, editingDayIdx = null;
 const EMOJIS = ['✈️','🗺️','🏖️','🏔️','🌸','🏯','🍜','🎡','🚂','🚢','🏕️','🌴'];
 
 function uid() { return Math.random().toString(36).slice(2,9); }
 function escHtml(s) { return String(s||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 function sortDays() { state.days.sort((a,b) => a.date.localeCompare(b.date)); }
+function closeModal(id) { document.getElementById(id).classList.remove('show'); }
 
-// ══════════════════════════════════════════
-//  FIREBASE
-// ══════════════════════════════════════════
+// ── 저장 ──
 async function saveToFirestore() {
   if (!window._currentUser || !currentTripId) return;
   setSaveStatus('saving');
   try {
-    const ref = window._fbDoc(window._db, 'users', window._currentUser.uid, 'trips', currentTripId);
-    await window._fbSetDoc(ref, state);
+    await window._fbSetDoc(window._fbDoc(window._db,'users',window._currentUser.uid,'trips',currentTripId), state);
     setSaveStatus('saved');
   } catch(e) { setSaveStatus('error'); }
 }
-
-function save() {
-  clearTimeout(saveTimer);
-  setSaveStatus('saving');
-  saveTimer = setTimeout(saveToFirestore, 1200);
-}
-
+function save() { clearTimeout(saveTimer); setSaveStatus('saving'); saveTimer = setTimeout(saveToFirestore, 1200); }
 function setSaveStatus(s) {
-  const dot = document.getElementById('saveDot');
-  const txt = document.getElementById('saveText');
+  const dot = document.getElementById('saveDot'), txt = document.getElementById('saveText');
   if (!dot||!txt) return;
   if (s==='saving') { dot.className='save-dot saving'; txt.textContent='저장 중...'; }
   else if (s==='saved') { dot.className='save-dot saved'; txt.textContent='저장됨'; }
   else { dot.className='save-dot'; txt.textContent='저장 실패'; }
 }
 
-// ══════════════════════════════════════════
-//  여행 목록
-// ══════════════════════════════════════════
+// ── 여행 목록 ──
 window.showTripList = async function() {
   document.getElementById('tripListScreen').classList.remove('hidden');
-  document.querySelector('.main') && (document.querySelector('header').style.display='none');
-  document.getElementById('dayTabs').style.display='none';
-  document.querySelector('.main').style.display='none';
+  document.querySelector('header').style.display = 'none';
+  document.getElementById('dayTabs').style.display = 'none';
+  document.querySelector('.main').style.display = 'none';
 
   const grid = document.getElementById('tripGrid');
-  grid.innerHTML = '<div style="color:var(--text-muted);font-size:13px;">불러오는 중...</div>';
+  grid.innerHTML = '<div style="color:var(--text-muted);font-size:13px;grid-column:1/-1;">불러오는 중...</div>';
 
   try {
-    const col = window._fbCollection(window._db, 'users', window._currentUser.uid, 'trips');
-    const snap = await window._fbGetDocs(col);
+    const snap = await window._fbGetDocs(window._fbCollection(window._db,'users',window._currentUser.uid,'trips'));
     grid.innerHTML = '';
-
     snap.forEach(d => {
-      const trip = d.data();
+      const t = d.data();
       const card = document.createElement('div');
       card.className = 'trip-card';
-      const dates = trip.days?.length ? `${trip.days[0].date} ~ ${trip.days[trip.days.length-1].date}` : '날짜 없음';
+      const sorted = [...(t.days||[])].sort((a,b)=>a.date.localeCompare(b.date));
+      const dates = sorted.length ? `${sorted[0].date} ~ ${sorted[sorted.length-1].date}` : '날짜 없음';
       card.innerHTML = `
         <button class="trip-card-delete" onclick="deleteTrip('${d.id}',event)">✕</button>
-        <div class="trip-card-emoji">${trip.emoji||'✈️'}</div>
-        <div class="trip-card-name">${escHtml(trip.tripName||'이름 없는 여행')}</div>
-        <div class="trip-card-dates">${dates} · ${trip.days?.length||0}일</div>`;
-      card.onclick = () => openTrip(d.id, trip);
+        <div class="trip-card-emoji">${t.emoji||'✈️'}</div>
+        <div class="trip-card-name">${escHtml(t.tripName||'이름 없는 여행')}</div>
+        <div class="trip-card-dates">${dates} · ${t.days?.length||0}일</div>`;
+      card.onclick = () => openTrip(d.id, t);
       grid.appendChild(card);
     });
-
-    // 새 여행 카드
     const newCard = document.createElement('div');
     newCard.className = 'trip-card trip-card-new';
-    newCard.innerHTML = `<div class="trip-card-new-icon">➕</div><div>새 여행 만들기</div>`;
+    newCard.innerHTML = '<div style="font-size:28px">➕</div><div>새 여행 만들기</div>';
     newCard.onclick = openNewTripModal;
     grid.appendChild(newCard);
-
   } catch(e) {
-    grid.innerHTML = '<div style="color:red;font-size:13px;">불러오기 실패</div>';
+    grid.innerHTML = '<div style="color:red;font-size:13px;">불러오기 실패: ' + e.message + '</div>';
   }
 };
 
@@ -438,42 +394,31 @@ function openTrip(tripId, tripData) {
   state = tripData;
   if (!state.days) state.days = [];
   if (state.currentDayIdx >= state.days.length) state.currentDayIdx = 0;
+  sortDays();
 
   document.getElementById('tripListScreen').classList.add('hidden');
-  document.querySelector('header').style.display='flex';
-  document.getElementById('dayTabs').style.display='flex';
-  document.querySelector('.main').style.display='flex';
-  document.getElementById('tripNameDisplay').textContent = `← ${state.emoji||'✈️'} ${state.tripName||'여행'}`;
-  document.getElementById('mapLegend').style.display = 'flex';
+  document.querySelector('header').style.display = 'flex';
+  document.getElementById('dayTabs').style.display = 'flex';
+  document.querySelector('.main').style.display = 'flex';
+  document.getElementById('tripNameDisplay').textContent = `${state.emoji||'✈️'} ${state.tripName||''}`;
 
-  timeCache = {}; routeCache = {};
-  initMap();
-  renderTabs();
-  renderTimeline();
-  geocodeAll();
+  timeCache={}; routeCache={};
+  initMap(); renderTabs(); renderTimeline(); geocodeAll();
 }
 
-window.goTripList = function() {
-  document.getElementById('tripListScreen').classList.remove('hidden');
-  document.querySelector('header').style.display='none';
-  document.getElementById('dayTabs').style.display='none';
-  document.querySelector('.main').style.display='none';
-  window.showTripList();
-};
+window.goTripList = function() { window.showTripList(); };
 
 async function deleteTrip(tripId, e) {
   e.stopPropagation();
   if (!confirm('이 여행을 삭제할까요?')) return;
-  await window._fbDeleteDoc(window._fbDoc(window._db, 'users', window._currentUser.uid, 'trips', tripId));
+  await window._fbDeleteDoc(window._fbDoc(window._db,'users',window._currentUser.uid,'trips',tripId));
   window.showTripList();
 }
 
-// ── 새 여행 모달 ──
 function openNewTripModal() {
-  // 이모지 피커
   const picker = document.getElementById('emojiPicker');
   picker.innerHTML = '';
-  EMOJIS.forEach((em, i) => {
+  EMOJIS.forEach((em,i) => {
     const btn = document.createElement('button');
     btn.className = `emoji-opt ${i===0?'selected':''}`;
     btn.textContent = em;
@@ -490,42 +435,20 @@ async function confirmNewTrip() {
   const date = document.getElementById('newTripStartDate').value;
   const emoji = document.querySelector('#emojiPicker .emoji-opt.selected')?.textContent || '✈️';
   if (!name) { alert('여행 이름을 입력해주세요!'); return; }
-
   const newId = uid();
-  const newTrip = {
-    tripName: name, emoji,
-    currentDayIdx: 0,
-    days: [{ date, stops: [{ id:uid(), time:'09:00', name:'', cat:'관광', memo:'', transport:'대중교통', lat:null, lng:null }] }]
-  };
-  await window._fbSetDoc(window._fbDoc(window._db, 'users', window._currentUser.uid, 'trips', newId), newTrip);
+  const newTrip = { tripName:name, emoji, currentDayIdx:0, days:[{ date, stops:[{id:uid(),time:'09:00',name:'',cat:'관광',memo:'',transport:'대중교통',lat:null,lng:null}] }] };
+  await window._fbSetDoc(window._fbDoc(window._db,'users',window._currentUser.uid,'trips',newId), newTrip);
   closeModal('newTripModal');
   openTrip(newId, newTrip);
 }
 
-// ══════════════════════════════════════════
-//  로그인 / 로그아웃
-// ══════════════════════════════════════════
-window.doSignIn = async function() {
-  const provider = new window._GoogleAuthProvider();
-  try { await window._fbSignInWithPopup(provider); } catch(e) { console.error(e); }
-};
-
+// ── 로그아웃 ──
 window.doSignOut = async function() {
   if (!confirm('로그아웃 할까요?')) return;
-  await window._fbSignOut(window._auth);
-  document.getElementById('loginScreen').classList.remove('hidden');
-  document.getElementById('tripListScreen').classList.add('hidden');
-  document.querySelector('header').style.display = 'none';
-  document.getElementById('dayTabs').style.display = 'none';
-  document.querySelector('.main').style.display = 'none';
-  state = { days:[], currentDayIdx:0 };
-  timeCache = {}; routeCache = {};
-  currentTripId = null;
+  await window._fbSignOut();
 };
 
-// ══════════════════════════════════════════
-//  KAKAO SDK & MAP
-// ══════════════════════════════════════════
+// ── 카카오 SDK ──
 window.loadKakaoSDK = function() {
   return new Promise(resolve => {
     if (window.kakao && window.kakao.maps) { resolve(); return; }
@@ -538,246 +461,191 @@ window.loadKakaoSDK = function() {
 };
 
 function initMap() {
-  if (!window.kakao || !kakao.maps) return;
-  try {
-    map = new kakao.maps.Map(document.getElementById('kakaoMap'), {
-      center: new kakao.maps.LatLng(37.5665, 126.9780), level: 7
-    });
-  } catch(e) {}
+  if (!window.kakao||!kakao.maps) return;
+  try { map = new kakao.maps.Map(document.getElementById('kakaoMap'), { center: new kakao.maps.LatLng(37.5665,126.9780), level:7 }); } catch(e) {}
 }
 
-// ══════════════════════════════════════════
-//  GEOCODE & ROUTE
-// ══════════════════════════════════════════
+// ── Geocode & Route ──
 async function geocodeAll() {
   const day = state.days[state.currentDayIdx];
   if (!day) return;
   for (const s of day.stops) {
-    if (s.name && (!s.lat || !s.lng)) {
-      const c = await geocode(s.name);
-      if (c) { s.lat = c.lat; s.lng = c.lng; }
-    }
+    if (s.name && (!s.lat||!s.lng)) { const c = await geocode(s.name); if (c) { s.lat=c.lat; s.lng=c.lng; } }
   }
-  save();
-  await drawAllRoutes();
-  renderTimeline();
-  fetchAllTimes();
+  save(); await drawAllRoutes(); renderTimeline(); fetchAllTimes();
 }
 
 async function geocode(name) {
   if (!name.trim()) return null;
   try {
-    const r = await fetch(
-      `https://dapi.kakao.com/v2/local/search/keyword.json?query=${encodeURIComponent(name)}&size=1`,
-      { headers: { Authorization: `KakaoAK ${KAKAO_REST_KEY}` } }
-    );
+    const r = await fetch(`https://dapi.kakao.com/v2/local/search/keyword.json?query=${encodeURIComponent(name)}&size=1`, { headers:{Authorization:`KakaoAK ${KAKAO_REST_KEY}`} });
     const d = await r.json();
-    if (d.documents?.length) return { lat: parseFloat(d.documents[0].y), lng: parseFloat(d.documents[0].x) };
+    if (d.documents?.length) return { lat:parseFloat(d.documents[0].y), lng:parseFloat(d.documents[0].x) };
   } catch(e) {}
   return null;
 }
 
 async function drawAllRoutes() {
   if (!map) return;
-  routePolylines.forEach(p => { try { p.setMap(null); } catch(e) {} });
-  markerOverlays.forEach(m => { try { m.setMap(null); } catch(e) {} });
-  routePolylines = []; markerOverlays = [];
-
+  routePolylines.forEach(p=>{try{p.setMap(null)}catch(e){}});
+  markerOverlays.forEach(m=>{try{m.setMap(null)}catch(e){}});
+  routePolylines=[]; markerOverlays=[];
   const day = state.days[state.currentDayIdx];
   if (!day) return;
-  const valid = day.stops.filter(s => s.lat && s.lng);
+  const valid = day.stops.filter(s=>s.lat&&s.lng);
   if (!valid.length) return;
-
   const bounds = new kakao.maps.LatLngBounds();
-  valid.forEach((s, i) => {
-    const pos = new kakao.maps.LatLng(s.lat, s.lng);
+  valid.forEach((s,i) => {
+    const pos = new kakao.maps.LatLng(s.lat,s.lng);
     bounds.extend(pos);
     const div = document.createElement('div');
     div.style.cssText = 'background:#FEE500;border-radius:50%;width:28px;height:28px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;border:2px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,0.2);cursor:pointer;color:#1A1A1A;';
-    div.textContent = i + 1;
+    div.textContent = i+1;
     div.onclick = () => highlightCard(s.id);
-    const ov = new kakao.maps.CustomOverlay({ position: pos, content: div, yAnchor: 0.5 });
+    const ov = new kakao.maps.CustomOverlay({position:pos,content:div,yAnchor:0.5});
     ov.setMap(map); markerOverlays.push(ov);
   });
-
-  for (let i = 0; i < day.stops.length - 1; i++) {
-    const a = day.stops[i], b = day.stops[i+1];
-    if (!a.lat || !b.lat) continue;
-    await drawSegment(a, b);
+  for (let i=0;i<day.stops.length-1;i++) {
+    const a=day.stops[i], b=day.stops[i+1];
+    if (!a.lat||!b.lat) continue;
+    await drawSegment(a,b);
   }
   map.setBounds(bounds);
 }
 
-async function drawSegment(a, b) {
-  const key = `route_${a.lat},${a.lng}|${b.lat},${b.lng}|${a.transport}`;
+async function drawSegment(a,b) {
+  const key = `r_${a.lat},${a.lng}|${b.lat},${b.lng}|${a.transport}`;
   if (!routeCache[key]) {
-    if (a.transport === '자동차') routeCache[key] = await fetchCarRoute(a, b) || [[a.lat,a.lng],[b.lat,b.lng]];
-    else if (a.transport === '도보') routeCache[key] = await fetchWalkRoute(a, b) || [[a.lat,a.lng],[b.lat,b.lng]];
-    else routeCache[key] = await fetchTransitRoute(a, b) || [[a.lat,a.lng],[b.lat,b.lng]];
+    if (a.transport==='자동차') routeCache[key] = await fetchCarRoute(a,b)||[[a.lat,a.lng],[b.lat,b.lng]];
+    else if (a.transport==='대중교통') routeCache[key] = await fetchTransitRoute(a,b)||[[a.lat,a.lng],[b.lat,b.lng]];
+    else routeCache[key] = [[a.lat,a.lng],[b.lat,b.lng]];
   }
-
-  const colorMap = { '자동차':'#4A90D9', '도보':'#52C788', '대중교통':'#E85D4A' };
-  const styleMap = { '자동차':'solid', '도보':'shortdot', '대중교통':'dash' };
-
-  const poly = new kakao.maps.Polyline({
-    path: routeCache[key].map(c => new kakao.maps.LatLng(c[0], c[1])),
-    strokeWeight: 4,
-    strokeColor: colorMap[a.transport] || '#999',
-    strokeOpacity: 0.85,
-    strokeStyle: styleMap[a.transport] || 'solid'
-  });
+  const cm={'자동차':'#4A90D9','도보':'#52C788','대중교통':'#E85D4A'};
+  const sm={'자동차':'solid','도보':'shortdot','대중교통':'dash'};
+  const poly = new kakao.maps.Polyline({ path:routeCache[key].map(c=>new kakao.maps.LatLng(c[0],c[1])), strokeWeight:4, strokeColor:cm[a.transport]||'#999', strokeOpacity:0.85, strokeStyle:sm[a.transport]||'solid' });
   poly.setMap(map); routePolylines.push(poly);
 }
 
-async function fetchCarRoute(a, b) {
+async function fetchCarRoute(a,b) {
   try {
-    const r = await fetch(
-      `https://apis-navi.kakaomobility.com/v1/directions?origin=${a.lng},${a.lat}&destination=${b.lng},${b.lat}&priority=RECOMMEND`,
-      { headers: { Authorization: `KakaoAK ${KAKAO_REST_KEY}` } }
-    );
+    const r = await fetch(`https://apis-navi.kakaomobility.com/v1/directions?origin=${a.lng},${a.lat}&destination=${b.lng},${b.lat}&priority=RECOMMEND`, {headers:{Authorization:`KakaoAK ${KAKAO_REST_KEY}`}});
     const d = await r.json();
-    const coords = [];
-    d.routes?.[0]?.sections?.forEach(sec => sec.roads?.forEach(road => {
-      for (let i = 0; i < road.vertexes.length; i += 2)
-        coords.push([road.vertexes[i+1], road.vertexes[i]]);
+    const coords=[];
+    d.routes?.[0]?.sections?.forEach(sec=>sec.roads?.forEach(road=>{
+      for(let i=0;i<road.vertexes.length;i+=2) coords.push([road.vertexes[i+1],road.vertexes[i]]);
     }));
-    return coords.length ? coords : null;
-  } catch(e) { return null; }
+    return coords.length?coords:null;
+  } catch(e){return null;}
 }
 
-async function fetchWalkRoute(a, b) {
-  // 카카오 도보 경로 API 미제공 → 직선 연결
-  return [[a.lat, a.lng], [b.lat, b.lng]];
-}
-
-async function fetchTransitRoute(a, b) {
-  // ODsay 경유 정류장 좌표 추출
+async function fetchTransitRoute(a,b) {
   try {
     const r = await fetch(`https://api.odsay.com/v1/api/searchPubTransPathT?SX=${a.lng}&SY=${a.lat}&EX=${b.lng}&EY=${b.lat}&apiKey=${encodeURIComponent(ODSAY_KEY)}`);
     const d = await r.json();
     const path = d.result?.path?.[0];
     if (!path) return null;
-    const coords = [[a.lat, a.lng]];
-    path.subPath?.forEach(sub => {
-      if (sub.passStopList?.stations) {
-        sub.passStopList.stations.forEach(st => {
-          if (st.x && st.y) coords.push([parseFloat(st.y), parseFloat(st.x)]);
-        });
-      }
+    const coords=[[a.lat,a.lng]];
+    path.subPath?.forEach(sub=>{
+      sub.passStopList?.stations?.forEach(st=>{ if(st.x&&st.y) coords.push([parseFloat(st.y),parseFloat(st.x)]); });
     });
-    coords.push([b.lat, b.lng]);
-    return coords.length > 2 ? coords : null;
-  } catch(e) { return null; }
+    coords.push([b.lat,b.lng]);
+    return coords.length>2?coords:null;
+  } catch(e){return null;}
 }
 
 function highlightCard(id) {
-  document.querySelectorAll('.stop-card').forEach(c => c.classList.remove('highlighted'));
+  document.querySelectorAll('.stop-card').forEach(c=>c.classList.remove('highlighted'));
   const el = document.querySelector(`.stop-card[data-id="${id}"]`);
-  if (el) { el.classList.add('highlighted'); el.scrollIntoView({ behavior:'smooth', block:'nearest' }); }
+  if (el) { el.classList.add('highlighted'); el.scrollIntoView({behavior:'smooth',block:'nearest'}); }
 }
 
-// ══════════════════════════════════════════
-//  소요시간
-// ══════════════════════════════════════════
+// ── 소요시간 ──
 async function fetchAllTimes() {
   const day = state.days[state.currentDayIdx];
   if (!day) return;
-  for (let i = 0; i < day.stops.length - 1; i++) {
-    const a = day.stops[i], b = day.stops[i+1];
-    if (!a.lat || !b.lat) continue;
-    const key = `time_${a.lat},${a.lng}|${b.lat},${b.lng}|${a.transport}`;
-    if (timeCache[key]) { renderTimeInfo(a.id, a.transport, timeCache[key]); continue; }
+  for (let i=0;i<day.stops.length-1;i++) {
+    const a=day.stops[i], b=day.stops[i+1];
+    if (!a.lat||!b.lat) continue;
+    const key=`t_${a.lat},${a.lng}|${b.lat},${b.lng}|${a.transport}`;
+    if (timeCache[key]) { renderTimeInfo(a.id,a.transport,timeCache[key]); continue; }
     renderTimeLoading(a.id);
-    const result = await fetchTimeByTransport(a, b, a.transport);
-    timeCache[key] = result;
-    renderTimeInfo(a.id, a.transport, result);
+    const result = await fetchTimeByTransport(a,b,a.transport);
+    timeCache[key]=result; renderTimeInfo(a.id,a.transport,result);
   }
 }
 
-async function fetchTimeByTransport(a, b, transport) {
-  if (transport === '자동차') return fetchCarTime(a, b);
-  if (transport === '도보') return fetchWalkTime(a, b);
-  return fetchTransitDetail(a, b);
+async function fetchTimeByTransport(a,b,t) {
+  if (t==='자동차') return fetchCarTime(a,b);
+  if (t==='도보') return fetchWalkTime(a,b);
+  return fetchTransitDetail(a,b);
 }
 
-async function fetchCarTime(a, b) {
+async function fetchCarTime(a,b) {
   try {
-    const r = await fetch(
-      `https://apis-navi.kakaomobility.com/v1/directions?origin=${a.lng},${a.lat}&destination=${b.lng},${b.lat}&priority=RECOMMEND`,
-      { headers: { Authorization: `KakaoAK ${KAKAO_REST_KEY}` } }
-    );
-    const d = await r.json();
-    const sec = d.routes?.[0]?.summary?.duration;
-    return sec != null ? { type:'car', minutes: Math.round(sec/60) } : null;
-  } catch(e) { return null; }
+    const r=await fetch(`https://apis-navi.kakaomobility.com/v1/directions?origin=${a.lng},${a.lat}&destination=${b.lng},${b.lat}&priority=RECOMMEND`,{headers:{Authorization:`KakaoAK ${KAKAO_REST_KEY}`}});
+    const d=await r.json();
+    const sec=d.routes?.[0]?.summary?.duration;
+    return sec!=null?{type:'car',minutes:Math.round(sec/60)}:null;
+  } catch(e){return null;}
 }
 
-function fetchWalkTime(a, b) {
-  const R = 6371000;
-  const dLat=(b.lat-a.lat)*Math.PI/180, dLng=(b.lng-a.lng)*Math.PI/180;
+function fetchWalkTime(a,b) {
+  const R=6371000, dLat=(b.lat-a.lat)*Math.PI/180, dLng=(b.lng-a.lng)*Math.PI/180;
   const x=Math.sin(dLat/2)**2+Math.cos(a.lat*Math.PI/180)*Math.cos(b.lat*Math.PI/180)*Math.sin(dLng/2)**2;
-  return Promise.resolve({ type:'walk', minutes: Math.round(R*2*Math.atan2(Math.sqrt(x),Math.sqrt(1-x))/67) });
+  return Promise.resolve({type:'walk',minutes:Math.round(R*2*Math.atan2(Math.sqrt(x),Math.sqrt(1-x))/67)});
 }
 
-async function fetchTransitDetail(a, b) {
+async function fetchTransitDetail(a,b) {
   try {
-    const r = await fetch(`https://api.odsay.com/v1/api/searchPubTransPathT?SX=${a.lng}&SY=${a.lat}&EX=${b.lng}&EY=${b.lat}&apiKey=${encodeURIComponent(ODSAY_KEY)}`);
-    const d = await r.json();
-    const path = d.result?.path?.[0];
+    const r=await fetch(`https://api.odsay.com/v1/api/searchPubTransPathT?SX=${a.lng}&SY=${a.lat}&EX=${b.lng}&EY=${b.lat}&apiKey=${encodeURIComponent(ODSAY_KEY)}`);
+    const d=await r.json();
+    const path=d.result?.path?.[0];
     if (!path) return null;
-    const steps = [];
-    path.subPath?.forEach(sub => {
-      if (sub.trafficType===1) steps.push({ type:'subway', icon:'🚇', name:sub.lane?.[0]?.name||'지하철', from:sub.startName, to:sub.endName, time:sub.sectionTime, stationCount:sub.stationCount });
-      else if (sub.trafficType===2) steps.push({ type:'bus', icon:'🚌', name:`버스 ${sub.lane?.map(l=>l.busNo).filter(Boolean).join(', ')||''}`, from:sub.startName, to:sub.endName, time:sub.sectionTime, stationCount:sub.stationCount });
-      else if (sub.trafficType===3 && sub.sectionTime>0) steps.push({ type:'walk', icon:'🚶', name:'도보', from:'', to:'', time:sub.sectionTime, distance:sub.distance });
+    const steps=[];
+    path.subPath?.forEach(sub=>{
+      if (sub.trafficType===1) steps.push({type:'subway',icon:'🚇',name:sub.lane?.[0]?.name||'지하철',from:sub.startName,to:sub.endName,time:sub.sectionTime,stationCount:sub.stationCount});
+      else if (sub.trafficType===2) steps.push({type:'bus',icon:'🚌',name:`버스 ${sub.lane?.map(l=>l.busNo).filter(Boolean).join(', ')||''}`,from:sub.startName,to:sub.endName,time:sub.sectionTime,stationCount:sub.stationCount});
+      else if (sub.trafficType===3&&sub.sectionTime>0) steps.push({type:'walk',icon:'🚶',name:'도보',from:'',to:'',time:sub.sectionTime,distance:sub.distance});
     });
-    return { type:'transit', totalTime:path.info.totalTime, steps };
-  } catch(e) { return null; }
+    return {type:'transit',totalTime:path.info.totalTime,steps};
+  } catch(e){return null;}
 }
 
-function renderTimeLoading(stopId) {
-  const el = document.querySelector(`.stop-card[data-id="${stopId}"] .time-info-area`);
-  if (el) el.innerHTML = `<span class="time-badge loading">⏳ 계산 중...</span>`;
-}
+function renderTimeLoading(sid) { const el=document.querySelector(`.stop-card[data-id="${sid}"] .time-info-area`); if(el) el.innerHTML=`<span class="time-badge loading">⏳ 계산 중...</span>`; }
 
-function renderTimeInfo(stopId, transport, result) {
-  const el = document.querySelector(`.stop-card[data-id="${stopId}"] .time-info-area`);
+function renderTimeInfo(sid,transport,result) {
+  const el=document.querySelector(`.stop-card[data-id="${sid}"] .time-info-area`);
   if (!el) return;
-  if (!result) { el.innerHTML = `<span class="time-badge error">경로 정보 없음</span>`; return; }
-  if (result.type==='car') {
-    el.innerHTML = `<div class="time-summary"><span class="time-badge car">🚗 약 ${result.minutes}분</span></div>`;
-  } else if (result.type==='walk') {
-    el.innerHTML = `<div class="time-summary"><span class="time-badge walk">🚶 약 ${result.minutes}분</span></div>`;
-  } else if (result.type==='transit') {
-    let html = `<div class="time-summary"><span class="time-badge bus">🚌 총 ${result.totalTime}분</span></div>`;
+  if (!result) { el.innerHTML=`<span class="time-badge error">경로 정보 없음</span>`; return; }
+  if (result.type==='car') { el.innerHTML=`<div class="time-summary"><span class="time-badge car">🚗 약 ${result.minutes}분</span></div>`; }
+  else if (result.type==='walk') { el.innerHTML=`<div class="time-summary"><span class="time-badge walk">🚶 약 ${result.minutes}분</span></div>`; }
+  else if (result.type==='transit') {
+    let html=`<div class="time-summary"><span class="time-badge bus">🚌 총 ${result.totalTime}분</span></div>`;
     if (result.steps?.length) {
-      html += `<div class="transit-detail">`;
-      result.steps.forEach(s => {
-        const ic = s.type==='subway'?'icon-sub':s.type==='bus'?'icon-bus':'icon-walk';
-        const desc = s.type==='walk'?(s.distance?`${s.distance}m`:''):`${s.from} → ${s.to}${s.stationCount?` (${s.stationCount}정거장)`:''}`;
-        html += `<div class="transit-step"><div class="transit-step-icon ${ic}">${s.icon}</div><div class="transit-step-info"><div class="transit-step-name">${escHtml(s.name)}</div>${desc?`<div class="transit-step-desc">${escHtml(desc)}</div>`:''}</div><div class="transit-step-time">${s.time}분</div></div>`;
+      html+=`<div class="transit-detail">`;
+      result.steps.forEach(s=>{
+        const ic=s.type==='subway'?'icon-sub':s.type==='bus'?'icon-bus':'icon-walk';
+        const desc=s.type==='walk'?(s.distance?`${s.distance}m`:''):`${s.from} → ${s.to}${s.stationCount?` (${s.stationCount}정거장)`:''}`;
+        html+=`<div class="transit-step"><div class="transit-step-icon ${ic}">${s.icon}</div><div class="transit-step-info"><div class="transit-step-name">${escHtml(s.name)}</div>${desc?`<div class="transit-step-desc">${escHtml(desc)}</div>`:''}</div><div class="transit-step-time">${s.time}분</div></div>`;
       });
-      html += `</div>`;
+      html+=`</div>`;
     }
-    el.innerHTML = html;
+    el.innerHTML=html;
   }
 }
 
-// ══════════════════════════════════════════
-//  TIMELINE
-// ══════════════════════════════════════════
+// ── 타임라인 렌더 ──
 function renderTimeline() {
-  const day = state.days[state.currentDayIdx];
-  const scroll = document.getElementById('timelineScroll');
+  const day=state.days[state.currentDayIdx];
+  const scroll=document.getElementById('timelineScroll');
   if (!scroll) return;
-  scroll.innerHTML = '';
+  scroll.innerHTML='';
   if (!day?.stops) return;
-
-  day.stops.forEach((stop, i) => {
-    const isLast = i === day.stops.length - 1;
-    const w = document.createElement('div');
-    w.className = 'stop-wrapper';
-    w.innerHTML = `
+  day.stops.forEach((stop,i)=>{
+    const isLast=i===day.stops.length-1;
+    const w=document.createElement('div');
+    w.className='stop-wrapper';
+    w.innerHTML=`
       <div class="stop-line">
         <div class="stop-dot ${stop.lat?'active-dot':''}">${i+1}</div>
         ${!isLast?'<div class="stop-connector"></div>':''}
@@ -797,8 +665,7 @@ function renderTimeline() {
           </select>
           <input class="memo-input" placeholder="메모 추가..." value="${escHtml(stop.memo||'')}" onchange="updateStop('${stop.id}','memo',this.value)">
         </div>
-        ${!isLast?`
-        <div class="transport-row">
+        ${!isLast?`<div class="transport-row">
           <div class="transport-btns">
             <span class="transport-label">이동수단</span>
             ${['도보','대중교통','자동차'].map(t=>`<button class="transport-btn ${stop.transport===t?'active-transport':''}" onclick="changeTransport('${stop.id}','${t}',this)">${t}</button>`).join('')}
@@ -808,153 +675,96 @@ function renderTimeline() {
       </div>`;
     scroll.appendChild(w);
   });
-
-  const addBtn = document.createElement('button');
-  addBtn.className = 'btn-add-stop';
-  addBtn.textContent = '+ 장소 추가';
-  addBtn.onclick = addStop;
+  const addBtn=document.createElement('button');
+  addBtn.className='btn-add-stop'; addBtn.textContent='+ 장소 추가'; addBtn.onclick=addStop;
   scroll.appendChild(addBtn);
-
-  document.getElementById('stopCount').textContent = `${day.stops.length}개 장소`;
-  document.getElementById('totalCount').textContent = `${day.stops.length}개`;
-
-  day.stops.forEach((s, i) => {
+  document.getElementById('stopCount').textContent=`${day.stops.length}개`;
+  document.getElementById('totalCount').textContent=`${day.stops.length}개`;
+  day.stops.forEach((s,i)=>{
     if (i===day.stops.length-1) return;
-    const next = day.stops[i+1];
+    const next=day.stops[i+1];
     if (!s.lat||!next?.lat) return;
-    const key = `time_${s.lat},${s.lng}|${next.lat},${next.lng}|${s.transport}`;
-    if (timeCache[key]) renderTimeInfo(s.id, s.transport, timeCache[key]);
+    const key=`t_${s.lat},${s.lng}|${next.lat},${next.lng}|${s.transport}`;
+    if (timeCache[key]) renderTimeInfo(s.id,s.transport,timeCache[key]);
   });
 }
 
-// ══════════════════════════════════════════
-//  CRUD
-// ══════════════════════════════════════════
-let gTimer = null;
-
-function updateStop(id, key, val) {
-  const s = state.days[state.currentDayIdx].stops.find(s=>s.id===id);
-  if (!s) return;
-  s[key]=val; save(); renderTimeline();
-}
-
-function updateStopName(id, val) {
-  const s = state.days[state.currentDayIdx].stops.find(s=>s.id===id);
-  if (!s) return;
-  s.name=val; s.lat=null; s.lng=null; save();
+// ── CRUD ──
+let gTimer=null;
+function updateStop(id,key,val) { const s=state.days[state.currentDayIdx].stops.find(s=>s.id===id); if(!s)return; s[key]=val; save(); renderTimeline(); }
+function updateStopName(id,val) {
+  const s=state.days[state.currentDayIdx].stops.find(s=>s.id===id);
+  if(!s)return; s.name=val; s.lat=null; s.lng=null; save();
   clearTimeout(gTimer);
-  gTimer = setTimeout(async () => {
-    if (!val.trim()) return;
-    const c = await geocode(val);
-    if (c) { s.lat=c.lat; s.lng=c.lng; timeCache={}; routeCache={}; save(); await drawAllRoutes(); renderTimeline(); fetchAllTimes(); }
-  }, 900);
+  gTimer=setTimeout(async()=>{ if(!val.trim())return; const c=await geocode(val); if(c){s.lat=c.lat;s.lng=c.lng;timeCache={};routeCache={};save();await drawAllRoutes();renderTimeline();fetchAllTimes();} },900);
 }
-
-async function changeTransport(id, val, btn) {
-  const day = state.days[state.currentDayIdx];
-  const s = day.stops.find(s=>s.id===id);
-  if (!s) return;
+async function changeTransport(id,val,btn) {
+  const day=state.days[state.currentDayIdx];
+  const s=day.stops.find(s=>s.id===id); if(!s)return;
   s.transport=val; save();
   btn.closest('.transport-btns').querySelectorAll('.transport-btn').forEach(b=>b.classList.toggle('active-transport',b.textContent===val));
-  routeCache={};
-  await drawAllRoutes();
-  const idx = day.stops.findIndex(s=>s.id===id);
-  const next = day.stops[idx+1];
-  if (!s.lat||!next?.lat) return;
-  const key = `time_${s.lat},${s.lng}|${next.lat},${next.lng}|${val}`;
-  if (timeCache[key]) { renderTimeInfo(id,val,timeCache[key]); return; }
+  routeCache={}; await drawAllRoutes();
+  const idx=day.stops.findIndex(s=>s.id===id);
+  const next=day.stops[idx+1];
+  if(!s.lat||!next?.lat)return;
+  const key=`t_${s.lat},${s.lng}|${next.lat},${next.lng}|${val}`;
+  if(timeCache[key]){renderTimeInfo(id,val,timeCache[key]);return;}
   renderTimeLoading(id);
-  const result = await fetchTimeByTransport(s, next, val);
+  const result=await fetchTimeByTransport(s,next,val);
   timeCache[key]=result; renderTimeInfo(id,val,result);
 }
-
-function addStop() {
-  state.days[state.currentDayIdx].stops.push({ id:uid(), time:'12:00', name:'', cat:'관광', memo:'', transport:'대중교통', lat:null, lng:null });
-  save(); renderTimeline();
-}
-
+function addStop() { state.days[state.currentDayIdx].stops.push({id:uid(),time:'12:00',name:'',cat:'관광',memo:'',transport:'대중교통',lat:null,lng:null}); save(); renderTimeline(); }
 function deleteStop(id) {
-  const day = state.days[state.currentDayIdx];
-  if (day.stops.length<=1) { alert('최소 1개의 장소가 필요합니다.'); return; }
-  if (!confirm('이 장소를 삭제할까요?')) return;
-  day.stops = day.stops.filter(s=>s.id!==id);
-  timeCache={}; routeCache={};
-  save(); drawAllRoutes(); renderTimeline(); fetchAllTimes();
+  const day=state.days[state.currentDayIdx];
+  if(day.stops.length<=1){alert('최소 1개의 장소가 필요합니다.');return;}
+  if(!confirm('이 장소를 삭제할까요?'))return;
+  day.stops=day.stops.filter(s=>s.id!==id); timeCache={};routeCache={};
+  save();drawAllRoutes();renderTimeline();fetchAllTimes();
 }
 
-// ══════════════════════════════════════════
-//  TABS (날짜 기준 정렬 + 수정)
-// ══════════════════════════════════════════
+// ── 탭 ──
 function renderTabs() {
-  sortDays(); // 날짜 오름차순 정렬
-  const tabs = document.getElementById('dayTabs');
-  if (!tabs) return;
-  tabs.innerHTML = '';
-
-  state.days.forEach((day, i) => {
-    const btn = document.createElement('button');
-    btn.className = `day-tab ${i===state.currentDayIdx?'active':''}`;
-    btn.innerHTML = `Day ${i+1} <span class="day-tab-date" onclick="openEditDate(${i},event)">${day.date}</span>`;
-    btn.onclick = (e) => {
-      if (e.target.classList.contains('day-tab-date')) return;
-      state.currentDayIdx=i; timeCache={}; routeCache={};
-      save(); renderTabs(); renderTimeline(); geocodeAll();
-    };
+  sortDays();
+  const tabs=document.getElementById('dayTabs');
+  if(!tabs)return; tabs.innerHTML='';
+  state.days.forEach((day,i)=>{
+    const btn=document.createElement('button');
+    btn.className=`day-tab ${i===state.currentDayIdx?'active':''}`;
+    btn.innerHTML=`Day ${i+1} <span class="day-tab-date" onclick="openEditDate(${i},event)">${day.date}</span>`;
+    btn.onclick=(e)=>{ if(e.target.classList.contains('day-tab-date'))return; state.currentDayIdx=i;timeCache={};routeCache={};save();renderTabs();renderTimeline();geocodeAll(); };
     tabs.appendChild(btn);
   });
-
-  const add = document.createElement('button');
-  add.className='btn-add-day'; add.textContent='+ 날짜 추가'; add.onclick=openAddDate;
+  const add=document.createElement('button');
+  add.className='btn-add-day';add.textContent='+ 날짜 추가';add.onclick=openAddDate;
   tabs.appendChild(add);
 }
 
-function openAddDate() {
-  document.getElementById('newDateInput').value = new Date().toISOString().slice(0,10);
-  document.getElementById('dateModal').classList.add('show');
-}
-
+function openAddDate() { document.getElementById('newDateInput').value=new Date().toISOString().slice(0,10); document.getElementById('dateModal').classList.add('show'); }
 function confirmAddDay() {
-  const date = document.getElementById('newDateInput').value;
-  if (!date) return;
-  state.days.push({ date, stops:[{id:uid(),time:'09:00',name:'',cat:'관광',memo:'',transport:'대중교통',lat:null,lng:null}] });
-  sortDays();
-  state.currentDayIdx = state.days.findIndex(d=>d.date===date);
-  timeCache={}; routeCache={};
-  save(); renderTabs(); renderTimeline(); closeModal('dateModal');
+  const date=document.getElementById('newDateInput').value; if(!date)return;
+  state.days.push({date,stops:[{id:uid(),time:'09:00',name:'',cat:'관광',memo:'',transport:'대중교통',lat:null,lng:null}]});
+  sortDays(); state.currentDayIdx=state.days.findIndex(d=>d.date===date);
+  timeCache={};routeCache={}; save();renderTabs();renderTimeline();closeModal('dateModal');
 }
 
-function openEditDate(idx, e) {
-  e.stopPropagation();
-  editingDayIdx = idx;
-  document.getElementById('editDateInput').value = state.days[idx].date;
-  document.getElementById('editDateModal').classList.add('show');
-}
-
+function openEditDate(idx,e) { e.stopPropagation(); editingDayIdx=idx; document.getElementById('editDateInput').value=state.days[idx].date; document.getElementById('editDateModal').classList.add('show'); }
 function confirmEditDay() {
-  const newDate = document.getElementById('editDateInput').value;
-  if (!newDate || editingDayIdx === null) return;
-  state.days[editingDayIdx].date = newDate;
-  sortDays();
-  state.currentDayIdx = state.days.findIndex(d=>d.date===newDate);
-  timeCache={}; routeCache={};
-  save(); renderTabs(); renderTimeline(); closeModal('editDateModal');
+  const newDate=document.getElementById('editDateInput').value;
+  if(!newDate||editingDayIdx===null)return;
+  state.days[editingDayIdx].date=newDate; sortDays();
+  state.currentDayIdx=state.days.findIndex(d=>d.date===newDate);
+  timeCache={};routeCache={}; save();renderTabs();renderTimeline();closeModal('editDateModal');
 }
-
 function confirmDeleteDay() {
-  if (editingDayIdx === null) return;
-  if (state.days.length <= 1) { alert('최소 1개의 날짜가 필요합니다.'); return; }
-  if (!confirm('이 날의 일정을 삭제할까요?')) return;
-  state.days.splice(editingDayIdx, 1);
-  if (state.currentDayIdx >= state.days.length) state.currentDayIdx = state.days.length - 1;
-  timeCache={}; routeCache={};
-  save(); renderTabs(); renderTimeline(); drawAllRoutes(); closeModal('editDateModal');
+  if(editingDayIdx===null)return;
+  if(state.days.length<=1){alert('최소 1개의 날짜가 필요합니다.');return;}
+  if(!confirm('이 날의 일정을 삭제할까요?'))return;
+  state.days.splice(editingDayIdx,1);
+  if(state.currentDayIdx>=state.days.length)state.currentDayIdx=state.days.length-1;
+  timeCache={};routeCache={}; save();renderTabs();renderTimeline();drawAllRoutes();closeModal('editDateModal');
 }
 
-function closeModal(id) { document.getElementById(id).classList.remove('show'); }
-
-// ══════════════════════════════════════════
-//  CSV
-// ══════════════════════════════════════════
+// ── CSV ──
 function exportCSV() {
   const rows=[['Day','날짜','순서','시간','장소','카테고리','메모','이동수단']];
   state.days.forEach((day,di)=>day.stops.forEach((s,si)=>rows.push([`Day${di+1}`,day.date,si+1,s.time,s.name,s.cat,s.memo||'',s.transport])));
@@ -963,13 +773,6 @@ function exportCSV() {
   a.href=URL.createObjectURL(new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8;'}));
   a.download=`${state.tripName||'여행일정'}.csv`; a.click();
 }
-
-// 초기 UI 설정
-window.addEventListener('DOMContentLoaded', () => {
-  document.querySelector('header').style.display = 'none';
-  document.getElementById('dayTabs').style.display = 'none';
-  document.querySelector('.main').style.display = 'none';
-});
 </script>
 </body>
 </html>
