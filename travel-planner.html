@@ -21,11 +21,42 @@
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body { font-family: 'Noto Sans KR', sans-serif; background: var(--bg); color: var(--text); height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
 
+  /* 로그인 화면 */
+  #loginScreen {
+    position: fixed; inset: 0; background: var(--white);
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    z-index: 9999; gap: 24px;
+  }
+  #loginScreen.hidden { display: none; }
+  .login-logo { width: 56px; height: 56px; background: var(--yellow); border-radius: 16px; display: flex; align-items: center; justify-content: center; font-size: 28px; }
+  .login-title { font-size: 24px; font-weight: 700; }
+  .login-sub { font-size: 14px; color: var(--text-sub); }
+  .btn-google {
+    display: flex; align-items: center; gap: 10px;
+    padding: 12px 24px; border-radius: 10px;
+    border: 1px solid var(--border); background: var(--white);
+    font-family: inherit; font-size: 15px; font-weight: 500;
+    cursor: pointer; transition: all 0.15s; box-shadow: var(--shadow);
+  }
+  .btn-google:hover { background: var(--bg); }
+  .google-icon { width: 20px; height: 20px; }
+
+  /* 헤더 */
   header { background: var(--white); border-bottom: 1px solid var(--border); padding: 0 24px; height: 56px; display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; }
   .logo { display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 17px; }
   .logo-icon { width: 32px; height: 32px; background: var(--yellow); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 16px; }
+  .header-right { display: flex; align-items: center; gap: 10px; }
+  .user-info { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--text-sub); }
+  .user-avatar { width: 28px; height: 28px; border-radius: 50%; border: 2px solid var(--border); }
   .btn { padding: 7px 14px; border-radius: 8px; border: 1px solid var(--border); cursor: pointer; font-family: inherit; font-size: 13px; font-weight: 500; background: transparent; color: var(--text-sub); transition: all 0.15s; }
   .btn:hover { background: var(--bg); }
+  .btn-yellow { background: var(--yellow); border-color: var(--yellow); color: var(--text); }
+
+  /* 저장 상태 표시 */
+  .save-status { font-size: 11px; color: var(--text-muted); display: flex; align-items: center; gap: 4px; }
+  .save-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--text-muted); }
+  .save-dot.saved { background: #52C788; }
+  .save-dot.saving { background: var(--yellow); animation: pulse 1s infinite; }
 
   .day-tabs { background: var(--white); border-bottom: 1px solid var(--border); padding: 0 24px; display: flex; align-items: center; gap: 4px; height: 46px; flex-shrink: 0; overflow-x: auto; }
   .day-tab { padding: 6px 16px; border-radius: 20px; border: none; background: transparent; cursor: pointer; font-family: inherit; font-size: 13px; font-weight: 500; color: var(--text-sub); white-space: nowrap; transition: all 0.15s; }
@@ -66,14 +97,12 @@
   .memo-input { flex: 1; border: none; background: transparent; font-family: inherit; font-size: 12px; color: var(--text-sub); outline: none; min-width: 0; }
   .memo-input::placeholder { color: var(--text-muted); }
 
-  /* 이동수단 + 소요시간 */
   .transport-row { margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--bg); }
   .transport-btns { display: flex; align-items: center; gap: 6px; margin-bottom: 8px; flex-wrap: wrap; }
   .transport-label { font-size: 11px; color: var(--text-muted); }
   .transport-btn { padding: 3px 10px; border-radius: 20px; border: 1px solid var(--border); background: transparent; font-family: inherit; font-size: 11px; cursor: pointer; color: var(--text-sub); transition: all 0.15s; }
   .transport-btn.active-transport { background: var(--text); color: var(--white); border-color: var(--text); }
 
-  /* 소요시간 뱃지 */
   .time-summary { display: flex; align-items: center; gap: 6px; margin-bottom: 6px; }
   .time-badge { display: inline-flex; align-items: center; gap: 4px; padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 500; }
   .time-badge.walk    { background: #EDFAF3; color: #52C788; }
@@ -83,14 +112,13 @@
   .time-badge.error   { background: var(--bg); color: var(--text-muted); }
   @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
 
-  /* 대중교통 상세 경로 */
   .transit-detail { margin-top: 6px; border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
   .transit-step { display: flex; align-items: flex-start; gap: 8px; padding: 7px 10px; font-size: 11px; border-bottom: 1px solid var(--bg); }
   .transit-step:last-child { border-bottom: none; }
   .transit-step-icon { width: 22px; height: 22px; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 11px; flex-shrink: 0; margin-top: 1px; }
-  .icon-walk  { background: #EDFAF3; }
-  .icon-bus   { background: #FEF0EE; }
-  .icon-sub   { background: #EBF4FF; }
+  .icon-walk { background: #EDFAF3; }
+  .icon-bus  { background: #FEF0EE; }
+  .icon-sub  { background: #EBF4FF; }
   .transit-step-info { flex: 1; line-height: 1.5; }
   .transit-step-name { font-weight: 600; color: var(--text); }
   .transit-step-desc { color: var(--text-sub); font-size: 10px; }
@@ -112,17 +140,44 @@
   .modal h3 { font-size: 16px; margin-bottom: 16px; }
   .modal input[type="date"] { width: 100%; padding: 10px 14px; border: 1px solid var(--border); border-radius: 8px; font-family: inherit; font-size: 14px; margin-bottom: 16px; outline: none; }
   .modal-actions { display: flex; gap: 8px; justify-content: flex-end; }
-  .btn-yellow { background: var(--yellow); border-color: var(--yellow); color: var(--text); }
 </style>
 </head>
 <body>
 
+<!-- 로그인 화면 -->
+<div id="loginScreen">
+  <div class="login-logo">🗺️</div>
+  <div class="login-title">여행 플래너</div>
+  <div class="login-sub">구글 계정으로 로그인하면 일정이 자동 저장돼요</div>
+  <button class="btn-google" onclick="signInWithGoogle()">
+    <svg class="google-icon" viewBox="0 0 24 24">
+      <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+      <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+      <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+      <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+    </svg>
+    Google로 로그인
+  </button>
+</div>
+
+<!-- 메인 앱 -->
 <header>
   <div class="logo">
     <div class="logo-icon">🗺️</div>
     <span>여행 플래너</span>
   </div>
-  <button class="btn" onclick="exportCSV()">⬇ CSV 내보내기</button>
+  <div class="header-right">
+    <div class="save-status">
+      <div class="save-dot" id="saveDot"></div>
+      <span id="saveText"></span>
+    </div>
+    <button class="btn" onclick="exportCSV()">⬇ CSV</button>
+    <div class="user-info" id="userInfo" style="display:none">
+      <img class="user-avatar" id="userAvatar" src="" alt="">
+      <span id="userName"></span>
+      <button class="btn" onclick="signOut()" style="padding:4px 10px;font-size:12px;">로그아웃</button>
+    </div>
+  </div>
 </header>
 
 <div class="day-tabs" id="dayTabs"></div>
@@ -155,33 +210,152 @@
   </div>
 </div>
 
+<!-- Firebase SDK -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getAuth, GoogleAuthProvider, signInWithPopup, signOut as fbSignOut, onAuthStateChanged }
+  from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+import { getFirestore, doc, getDoc, setDoc }
+  from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+// ── Firebase 설정 ──
+const firebaseConfig = {
+  apiKey: "AIzaSyDEOJUy0oUgAztwYF4Q5MnhUB_EPid_drc",
+  authDomain: "travel-planner-63bfb.firebaseapp.com",
+  projectId: "travel-planner-63bfb",
+  storageBucket: "travel-planner-63bfb.firebasestorage.app",
+  messagingSenderId: "1054948023849",
+  appId: "1:1054948023849:web:284637f36c12f477f50638"
+};
+
+const app  = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db   = getFirestore(app);
+
+// ── 전역 노출 ──
+window._auth = auth;
+window._db   = db;
+window._GoogleAuthProvider = GoogleAuthProvider;
+window._fbSignOut = fbSignOut;
+window._getDoc = getDoc;
+window._setDoc = setDoc;
+window._doc    = doc;
+
+// ── 인증 상태 감지 ──
+onAuthStateChanged(auth, async (user) => {
+  if (user) {
+    document.getElementById('loginScreen').classList.add('hidden');
+    document.getElementById('userInfo').style.display = 'flex';
+    document.getElementById('userAvatar').src = user.photoURL || '';
+    document.getElementById('userName').textContent = user.displayName || user.email;
+    window._currentUser = user;
+    await window.loadFromFirestore(user.uid);
+    await window.loadKakaoSDK();
+    window.initMap();
+    window.renderTabs();
+    window.renderTimeline();
+    window.geocodeAll();
+  } else {
+    document.getElementById('loginScreen').classList.remove('hidden');
+    document.getElementById('userInfo').style.display = 'none';
+    window._currentUser = null;
+  }
+});
+</script>
+
 <script>
 // ══════════════════════════════════════════
-//  🔑 키 설정
+//  🔑 카카오 키
 // ══════════════════════════════════════════
 const KAKAO_REST_KEY = 'df3b8dcb49a5702a7d40fae940ad3e17';
-const ODSAY_KEY      = 'V1hY1ycdWsswHGFswy3HJQ';
 const KAKAO_JS_KEY   = '3a651c6517e513f7e0819dd46ae3ee23';
+const ODSAY_KEY      = 'V1hY1ycdWsswHGFswy3HJQ';
 
 // ══════════════════════════════════════════
 //  STATE
 // ══════════════════════════════════════════
 let state = { days: [], currentDayIdx: 0 };
-let timeCache = {};         // 소요시간 캐시
-let routeCache = {};        // 도로 경로 좌표 캐시
-let map = null;
-let routePolylines = [];    // 현재 지도에 그려진 경로선
-let markerOverlays = [];    // 마커
+let timeCache = {}, routeCache = {};
+let map = null, routePolylines = [], markerOverlays = [];
+let saveTimer = null;
 
 function uid() { return Math.random().toString(36).slice(2,9); }
-function save() { try { localStorage.setItem('tp-v5', JSON.stringify(state)); } catch(e) {} }
-function load() { try { const s = localStorage.getItem('tp-v5'); return s ? JSON.parse(s) : null; } catch(e) { return null; } }
 function escHtml(s) { return String(s||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 
 // ══════════════════════════════════════════
-//  KAKAO SDK 동적 로드
+//  FIREBASE 저장 / 불러오기
 // ══════════════════════════════════════════
-function loadKakaoSDK() {
+window.loadFromFirestore = async function(uid) {
+  try {
+    const ref = window._doc(window._db, 'users', uid, 'data', 'itinerary');
+    const snap = await window._getDoc(ref);
+    if (snap.exists() && snap.data().days?.length > 0) {
+      state = snap.data();
+    } else {
+      const today = new Date().toISOString().slice(0,10);
+      state = {
+        currentDayIdx: 0,
+        days: [{ date: today, stops: [
+          { id:uid+'1', time:'09:00', name:'경복궁',       cat:'관광', memo:'한복 입고 입장하기', transport:'대중교통', lat:null, lng:null },
+          { id:uid+'2', time:'12:00', name:'광장시장',     cat:'식사', memo:'육회비빔밥 먹기',    transport:'도보',     lat:null, lng:null },
+          { id:uid+'3', time:'14:00', name:'북촌한옥마을', cat:'관광', memo:'사진 스팟 탐방',    transport:'자동차',   lat:null, lng:null },
+        ]}]
+      };
+    }
+  } catch(e) { console.error('불러오기 실패:', e); }
+};
+
+async function saveToFirestore() {
+  if (!window._currentUser) return;
+  setSaveStatus('saving');
+  try {
+    const ref = window._doc(window._db, 'users', window._currentUser.uid, 'data', 'itinerary');
+    await window._setDoc(ref, state);
+    setSaveStatus('saved');
+  } catch(e) { setSaveStatus('error'); console.error('저장 실패:', e); }
+}
+
+function save() {
+  clearTimeout(saveTimer);
+  setSaveStatus('saving');
+  saveTimer = setTimeout(() => saveToFirestore(), 1200);
+}
+
+function setSaveStatus(status) {
+  const dot = document.getElementById('saveDot');
+  const txt = document.getElementById('saveText');
+  if (!dot || !txt) return;
+  if (status === 'saving') { dot.className='save-dot saving'; txt.textContent='저장 중...'; }
+  else if (status === 'saved') { dot.className='save-dot saved'; txt.textContent='저장됨'; }
+  else { dot.className='save-dot'; txt.textContent='저장 실패'; }
+}
+
+// ══════════════════════════════════════════
+//  구글 로그인 / 로그아웃
+// ══════════════════════════════════════════
+window.signInWithGoogle = async function() {
+  const provider = new window._GoogleAuthProvider();
+  try { await signInWithPopup(window._auth, provider); }
+  catch(e) { console.error(e); }
+};
+
+async function signInWithPopup(auth, provider) {
+  const { signInWithPopup: fbSignInWithPopup } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js");
+  return fbSignInWithPopup(auth, provider);
+}
+
+window.signOut = async function() {
+  if (!confirm('로그아웃 할까요?')) return;
+  await window._fbSignOut(window._auth);
+  state = { days: [], currentDayIdx: 0 };
+  timeCache = {}; routeCache = {};
+  renderTabs(); renderTimeline();
+};
+
+// ══════════════════════════════════════════
+//  KAKAO SDK
+// ══════════════════════════════════════════
+window.loadKakaoSDK = function() {
   return new Promise(resolve => {
     if (window.kakao && window.kakao.maps) { resolve(); return; }
     const s = document.createElement('script');
@@ -190,47 +364,21 @@ function loadKakaoSDK() {
     s.onerror = () => resolve();
     document.head.appendChild(s);
   });
-}
+};
 
-// ══════════════════════════════════════════
-//  INIT
-// ══════════════════════════════════════════
-async function init() {
-  const saved = load();
-  if (saved && saved.days && saved.days.length > 0) {
-    state = saved;
-  } else {
-    const today = new Date().toISOString().slice(0,10);
-    state = {
-      currentDayIdx: 0,
-      days: [{ date: today, stops: [
-        { id:uid(), time:'09:00', name:'경복궁',       cat:'관광', memo:'한복 입고 입장하기', transport:'대중교통', lat:null, lng:null },
-        { id:uid(), time:'12:00', name:'광장시장',     cat:'식사', memo:'육회비빔밥 먹기',    transport:'도보',     lat:null, lng:null },
-        { id:uid(), time:'14:00', name:'북촌한옥마을', cat:'관광', memo:'사진 스팟 탐방',    transport:'자동차',   lat:null, lng:null },
-      ]}]
-    };
-    save();
-  }
-  await loadKakaoSDK();
-  initMap();
-  renderTabs();
-  renderTimeline();
-  geocodeAll();
-}
-
-// ══════════════════════════════════════════
-//  MAP
-// ══════════════════════════════════════════
-function initMap() {
+window.initMap = function() {
   if (!window.kakao || !kakao.maps) return;
   try {
     map = new kakao.maps.Map(document.getElementById('kakaoMap'), {
       center: new kakao.maps.LatLng(37.5665, 126.9780), level: 7
     });
   } catch(e) {}
-}
+};
 
-async function geocodeAll() {
+// ══════════════════════════════════════════
+//  GEOCODE & MAP
+// ══════════════════════════════════════════
+window.geocodeAll = async function() {
   const day = state.days[state.currentDayIdx];
   if (!day) return;
   for (const s of day.stops) {
@@ -243,7 +391,7 @@ async function geocodeAll() {
   await drawAllRoutes();
   renderTimeline();
   fetchAllTimes();
-}
+};
 
 async function geocode(name) {
   if (!name.trim()) return null;
@@ -258,24 +406,18 @@ async function geocode(name) {
   return null;
 }
 
-// ── 마커 + 경로선 전체 렌더 ──
 async function drawAllRoutes() {
   if (!map) return;
-
-  // 기존 제거
   routePolylines.forEach(p => { try { p.setMap(null); } catch(e) {} });
   markerOverlays.forEach(m => { try { m.setMap(null); } catch(e) {} });
   routePolylines = []; markerOverlays = [];
 
   const day = state.days[state.currentDayIdx];
   if (!day) return;
-
   const valid = day.stops.filter(s => s.lat && s.lng);
   if (!valid.length) return;
 
   const bounds = new kakao.maps.LatLngBounds();
-
-  // 마커 찍기
   valid.forEach((s, i) => {
     const pos = new kakao.maps.LatLng(s.lat, s.lng);
     bounds.extend(pos);
@@ -284,54 +426,34 @@ async function drawAllRoutes() {
     div.textContent = i + 1;
     div.onclick = () => highlightCard(s.id);
     const ov = new kakao.maps.CustomOverlay({ position: pos, content: div, yAnchor: 0.5 });
-    ov.setMap(map);
-    markerOverlays.push(ov);
+    ov.setMap(map); markerOverlays.push(ov);
   });
 
-  // 구간별 실제 경로 그리기
   for (let i = 0; i < day.stops.length - 1; i++) {
     const a = day.stops[i], b = day.stops[i+1];
     if (!a.lat || !b.lat) continue;
     await drawSegmentRoute(a, b);
   }
-
   map.setBounds(bounds);
 }
 
-// 구간별 경로 그리기 (이동수단에 따라 색상/스타일 다르게)
 async function drawSegmentRoute(a, b) {
   const key = `route_${a.lat},${a.lng}|${b.lat},${b.lng}|${a.transport}`;
-
   let coords = routeCache[key];
   if (!coords) {
-    if (a.transport === '자동차') {
-      coords = await fetchCarRoute(a, b);
-    } else if (a.transport === '도보') {
-      coords = straightLineCoords(a, b); // 도보는 직선 (카카오 도보 경로 미제공)
-    } else {
-      // 대중교통도 직선으로 (ODsay는 좌표 경로 미제공)
-      coords = straightLineCoords(a, b);
-    }
-    routeCache[key] = coords || [];
+    coords = a.transport === '자동차' ? await fetchCarRoute(a, b) : [[a.lat,a.lng],[b.lat,b.lng]];
+    routeCache[key] = coords || [[a.lat,a.lng],[b.lat,b.lng]];
   }
-
-  if (!coords || !coords.length) return;
-
-  const colorMap = { '자동차': '#4A90D9', '도보': '#52C788', '대중교통': '#E85D4A' };
-  const styleMap = { '자동차': 'solid', '도보': 'shortdot', '대중교통': 'dash' };
-
+  const colorMap = { '자동차':'#4A90D9', '도보':'#52C788', '대중교통':'#E85D4A' };
+  const styleMap = { '자동차':'solid', '도보':'shortdot', '대중교통':'dash' };
   const poly = new kakao.maps.Polyline({
-    path: coords.map(c => new kakao.maps.LatLng(c[0], c[1])),
-    strokeWeight: 4,
-    strokeColor: colorMap[a.transport] || '#FEE500',
-    strokeOpacity: 0.85,
-    strokeStyle: styleMap[a.transport] || 'solid'
+    path: routeCache[key].map(c => new kakao.maps.LatLng(c[0], c[1])),
+    strokeWeight: 4, strokeColor: colorMap[a.transport]||'#FEE500',
+    strokeOpacity: 0.85, strokeStyle: styleMap[a.transport]||'solid'
   });
-  poly.setMap(map);
-  routePolylines.push(poly);
+  poly.setMap(map); routePolylines.push(poly);
 }
 
-// 카카오 자동차 경로 좌표 가져오기
 async function fetchCarRoute(a, b) {
   try {
     const r = await fetch(
@@ -339,32 +461,25 @@ async function fetchCarRoute(a, b) {
       { headers: { Authorization: `KakaoAK ${KAKAO_REST_KEY}` } }
     );
     const d = await r.json();
-    const sections = d.routes?.[0]?.sections;
-    if (!sections) return null;
     const coords = [];
-    sections.forEach(sec => {
+    d.routes?.[0]?.sections?.forEach(sec => {
       sec.roads?.forEach(road => {
-        for (let i = 0; i < road.vertexes.length; i += 2) {
-          coords.push([road.vertexes[i+1], road.vertexes[i]]); // [lat, lng]
-        }
+        for (let i = 0; i < road.vertexes.length; i += 2)
+          coords.push([road.vertexes[i+1], road.vertexes[i]]);
       });
     });
     return coords.length ? coords : null;
   } catch(e) { return null; }
 }
 
-function straightLineCoords(a, b) {
-  return [[a.lat, a.lng], [b.lat, b.lng]];
-}
-
 function highlightCard(id) {
   document.querySelectorAll('.stop-card').forEach(c => c.classList.remove('highlighted'));
   const el = document.querySelector(`.stop-card[data-id="${id}"]`);
-  if (el) { el.classList.add('highlighted'); el.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); }
+  if (el) { el.classList.add('highlighted'); el.scrollIntoView({ behavior:'smooth', block:'nearest' }); }
 }
 
 // ══════════════════════════════════════════
-//  소요시간 (선택한 이동수단만)
+//  소요시간
 // ══════════════════════════════════════════
 async function fetchAllTimes() {
   const day = state.days[state.currentDayIdx];
@@ -382,13 +497,9 @@ async function fetchAllTimes() {
 }
 
 async function fetchTimeByTransport(a, b, transport) {
-  if (transport === '자동차') {
-    return await fetchCarTime(a, b);
-  } else if (transport === '도보') {
-    return fetchWalkTime(a, b);
-  } else {
-    return await fetchTransitDetail(a, b);
-  }
+  if (transport === '자동차') return fetchCarTime(a, b);
+  if (transport === '도보') return fetchWalkTime(a, b);
+  return fetchTransitDetail(a, b);
 }
 
 async function fetchCarTime(a, b) {
@@ -399,116 +510,65 @@ async function fetchCarTime(a, b) {
     );
     const d = await r.json();
     const sec = d.routes?.[0]?.summary?.duration;
-    return sec != null ? { type: 'car', minutes: Math.round(sec/60) } : null;
+    return sec != null ? { type:'car', minutes: Math.round(sec/60) } : null;
   } catch(e) { return null; }
 }
 
 function fetchWalkTime(a, b) {
   const R = 6371000;
-  const dLat = (b.lat - a.lat) * Math.PI/180;
-  const dLng = (b.lng - a.lng) * Math.PI/180;
+  const dLat = (b.lat-a.lat)*Math.PI/180, dLng = (b.lng-a.lng)*Math.PI/180;
   const x = Math.sin(dLat/2)**2 + Math.cos(a.lat*Math.PI/180)*Math.cos(b.lat*Math.PI/180)*Math.sin(dLng/2)**2;
-  const dist = R * 2 * Math.atan2(Math.sqrt(x), Math.sqrt(1-x));
-  return { type: 'walk', minutes: Math.round(dist/67) };
+  return Promise.resolve({ type:'walk', minutes: Math.round(6371000*2*Math.atan2(Math.sqrt(x),Math.sqrt(1-x))/67) });
 }
 
 async function fetchTransitDetail(a, b) {
   try {
-    const url = `https://api.odsay.com/v1/api/searchPubTransPathT?SX=${a.lng}&SY=${a.lat}&EX=${b.lng}&EY=${b.lat}&apiKey=${encodeURIComponent(ODSAY_KEY)}`;
-    const r = await fetch(url);
+    const r = await fetch(`https://api.odsay.com/v1/api/searchPubTransPathT?SX=${a.lng}&SY=${a.lat}&EX=${b.lng}&EY=${b.lat}&apiKey=${encodeURIComponent(ODSAY_KEY)}`);
     const d = await r.json();
     const path = d.result?.path?.[0];
     if (!path) return null;
-
-    const totalTime = path.info.totalTime;
     const steps = [];
-
     path.subPath?.forEach(sub => {
       if (sub.trafficType === 1) {
-        // 지하철
-        steps.push({
-          type: 'subway',
-          icon: '🚇',
-          name: sub.lane?.[0]?.name || '지하철',
-          from: sub.startName,
-          to: sub.endName,
-          time: sub.sectionTime,
-          stationCount: sub.stationCount
-        });
+        steps.push({ type:'subway', icon:'🚇', name: sub.lane?.[0]?.name||'지하철', from:sub.startName, to:sub.endName, time:sub.sectionTime, stationCount:sub.stationCount });
       } else if (sub.trafficType === 2) {
-        // 버스
-        const busNums = sub.lane?.map(l => l.busNo).filter(Boolean).join(', ') || '';
-        steps.push({
-          type: 'bus',
-          icon: '🚌',
-          name: `버스 ${busNums}`,
-          from: sub.startName,
-          to: sub.endName,
-          time: sub.sectionTime,
-          stationCount: sub.stationCount
-        });
-      } else if (sub.trafficType === 3) {
-        // 도보
-        if (sub.sectionTime > 0) {
-          steps.push({
-            type: 'walk',
-            icon: '🚶',
-            name: '도보',
-            from: '',
-            to: '',
-            time: sub.sectionTime,
-            distance: sub.distance
-          });
-        }
+        steps.push({ type:'bus', icon:'🚌', name:`버스 ${sub.lane?.map(l=>l.busNo).filter(Boolean).join(', ')||''}`, from:sub.startName, to:sub.endName, time:sub.sectionTime, stationCount:sub.stationCount });
+      } else if (sub.trafficType === 3 && sub.sectionTime > 0) {
+        steps.push({ type:'walk', icon:'🚶', name:'도보', from:'', to:'', time:sub.sectionTime, distance:sub.distance });
       }
     });
-
-    return { type: 'transit', totalTime, steps };
+    return { type:'transit', totalTime: path.info.totalTime, steps };
   } catch(e) { return null; }
 }
 
-// ── 소요시간 렌더 ──
 function renderTimeLoading(stopId) {
   const el = document.querySelector(`.stop-card[data-id="${stopId}"] .time-info-area`);
-  if (!el) return;
-  el.innerHTML = `<span class="time-badge loading">⏳ 계산 중...</span>`;
+  if (el) el.innerHTML = `<span class="time-badge loading">⏳ 계산 중...</span>`;
 }
 
 function renderTimeInfo(stopId, transport, result) {
   const el = document.querySelector(`.stop-card[data-id="${stopId}"] .time-info-area`);
   if (!el) return;
-
-  if (!result) {
-    el.innerHTML = `<span class="time-badge error">경로 정보 없음</span>`;
-    return;
-  }
-
+  if (!result) { el.innerHTML = `<span class="time-badge error">경로 정보 없음</span>`; return; }
   if (result.type === 'car') {
     el.innerHTML = `<div class="time-summary"><span class="time-badge car">🚗 약 ${result.minutes}분</span></div>`;
   } else if (result.type === 'walk') {
     el.innerHTML = `<div class="time-summary"><span class="time-badge walk">🚶 약 ${result.minutes}분</span></div>`;
   } else if (result.type === 'transit') {
     let html = `<div class="time-summary"><span class="time-badge bus">🚌 총 ${result.totalTime}분</span></div>`;
-    if (result.steps && result.steps.length) {
+    if (result.steps?.length) {
       html += `<div class="transit-detail">`;
       result.steps.forEach(step => {
-        const iconClass = step.type === 'subway' ? 'icon-sub' : step.type === 'bus' ? 'icon-bus' : 'icon-walk';
-        let desc = '';
-        if (step.type === 'walk') {
-          desc = step.distance ? `${step.distance}m` : '';
-        } else {
-          desc = `${step.from} → ${step.to}`;
-          if (step.stationCount) desc += ` (${step.stationCount}정거장)`;
-        }
-        html += `
-          <div class="transit-step">
-            <div class="transit-step-icon ${iconClass}">${step.icon}</div>
-            <div class="transit-step-info">
-              <div class="transit-step-name">${escHtml(step.name)}</div>
-              ${desc ? `<div class="transit-step-desc">${escHtml(desc)}</div>` : ''}
-            </div>
-            <div class="transit-step-time">${step.time}분</div>
-          </div>`;
+        const iconClass = step.type==='subway'?'icon-sub':step.type==='bus'?'icon-bus':'icon-walk';
+        const desc = step.type==='walk' ? (step.distance?`${step.distance}m`:'') : `${step.from} → ${step.to}${step.stationCount?` (${step.stationCount}정거장)`:''}`;
+        html += `<div class="transit-step">
+          <div class="transit-step-icon ${iconClass}">${step.icon}</div>
+          <div class="transit-step-info">
+            <div class="transit-step-name">${escHtml(step.name)}</div>
+            ${desc?`<div class="transit-step-desc">${escHtml(desc)}</div>`:''}
+          </div>
+          <div class="transit-step-time">${step.time}분</div>
+        </div>`;
       });
       html += `</div>`;
     }
@@ -517,56 +577,47 @@ function renderTimeInfo(stopId, transport, result) {
 }
 
 // ══════════════════════════════════════════
-//  TIMELINE 렌더
+//  TIMELINE
 // ══════════════════════════════════════════
-function renderTimeline() {
+window.renderTimeline = function() {
   const day = state.days[state.currentDayIdx];
   const scroll = document.getElementById('timelineScroll');
   if (!scroll) return;
   scroll.innerHTML = '';
-  if (!day || !day.stops) return;
+  if (!day?.stops) return;
 
   day.stops.forEach((stop, i) => {
-    const isLast = (i === day.stops.length - 1);
+    const isLast = i === day.stops.length - 1;
     const w = document.createElement('div');
     w.className = 'stop-wrapper';
     w.innerHTML = `
       <div class="stop-line">
-        <div class="stop-dot ${stop.lat ? 'active-dot' : ''}">${i+1}</div>
-        ${!isLast ? '<div class="stop-connector"></div>' : ''}
+        <div class="stop-dot ${stop.lat?'active-dot':''}">${i+1}</div>
+        ${!isLast?'<div class="stop-connector"></div>':''}
       </div>
       <div class="stop-card" data-id="${stop.id}">
         <div class="stop-card-top">
-          <input type="time" class="time-input" value="${stop.time}"
-            onchange="updateStop('${stop.id}','time',this.value)">
+          <input type="time" class="time-input" value="${stop.time}" onchange="updateStop('${stop.id}','time',this.value)">
           <button class="stop-delete" onclick="deleteStop('${stop.id}')">✕</button>
         </div>
-        <input class="stop-name-input" placeholder="장소 이름 입력" value="${escHtml(stop.name)}"
-          oninput="updateStopName('${stop.id}',this.value)">
+        <input class="stop-name-input" placeholder="장소 이름 입력" value="${escHtml(stop.name)}" oninput="updateStopName('${stop.id}',this.value)">
         <div class="stop-meta">
-          <select class="cat-select cat-${stop.cat}"
-            onchange="updateStop('${stop.id}','cat',this.value);this.className='cat-select cat-'+this.value">
+          <select class="cat-select cat-${stop.cat}" onchange="updateStop('${stop.id}','cat',this.value);this.className='cat-select cat-'+this.value">
             <option value="관광" ${stop.cat==='관광'?'selected':''}>관광</option>
             <option value="식사" ${stop.cat==='식사'?'selected':''}>식사</option>
             <option value="숙소" ${stop.cat==='숙소'?'selected':''}>숙소</option>
             <option value="이동" ${stop.cat==='이동'?'selected':''}>이동</option>
           </select>
-          <input class="memo-input" placeholder="메모 추가..." value="${escHtml(stop.memo||'')}"
-            onchange="updateStop('${stop.id}','memo',this.value)">
+          <input class="memo-input" placeholder="메모 추가..." value="${escHtml(stop.memo||'')}" onchange="updateStop('${stop.id}','memo',this.value)">
         </div>
-        ${!isLast ? `
+        ${!isLast?`
         <div class="transport-row">
           <div class="transport-btns">
             <span class="transport-label">이동수단</span>
-            ${['도보','대중교통','자동차'].map(t =>
-              `<button class="transport-btn ${stop.transport===t?'active-transport':''}"
-                onclick="changeTransport('${stop.id}','${t}',this)">${t}</button>`
-            ).join('')}
+            ${['도보','대중교통','자동차'].map(t=>`<button class="transport-btn ${stop.transport===t?'active-transport':''}" onclick="changeTransport('${stop.id}','${t}',this)">${t}</button>`).join('')}
           </div>
-          <div class="time-info-area">
-            <span class="time-badge loading">⏳ 계산 중...</span>
-          </div>
-        </div>` : ''}
+          <div class="time-info-area"><span class="time-badge loading">⏳ 계산 중...</span></div>
+        </div>`:''}
       </div>`;
     scroll.appendChild(w);
   });
@@ -580,15 +631,14 @@ function renderTimeline() {
   document.getElementById('stopCount').textContent = `${day.stops.length}개 장소`;
   document.getElementById('totalCount').textContent = `${day.stops.length}개`;
 
-  // 캐시 즉시 반영
   day.stops.forEach((s, i) => {
-    if (i === day.stops.length - 1) return;
+    if (i === day.stops.length-1) return;
     const next = day.stops[i+1];
     if (!s.lat || !next?.lat) return;
     const key = `time_${s.lat},${s.lng}|${next.lat},${next.lng}|${s.transport}`;
     if (timeCache[key]) renderTimeInfo(s.id, s.transport, timeCache[key]);
   });
-}
+};
 
 // ══════════════════════════════════════════
 //  CRUD
@@ -596,50 +646,36 @@ function renderTimeline() {
 let gTimer = null;
 
 function updateStop(id, key, val) {
-  const s = state.days[state.currentDayIdx].stops.find(s => s.id === id);
+  const s = state.days[state.currentDayIdx].stops.find(s=>s.id===id);
   if (!s) return;
   s[key] = val; save(); renderTimeline();
 }
 
 function updateStopName(id, val) {
-  const s = state.days[state.currentDayIdx].stops.find(s => s.id === id);
+  const s = state.days[state.currentDayIdx].stops.find(s=>s.id===id);
   if (!s) return;
   s.name = val; s.lat = null; s.lng = null; save();
   clearTimeout(gTimer);
   gTimer = setTimeout(async () => {
     if (!val.trim()) return;
     const c = await geocode(val);
-    if (c) {
-      s.lat = c.lat; s.lng = c.lng;
-      timeCache = {}; routeCache = {};
-      save(); await drawAllRoutes(); renderTimeline(); fetchAllTimes();
-    }
+    if (c) { s.lat=c.lat; s.lng=c.lng; timeCache={}; routeCache={}; save(); await drawAllRoutes(); renderTimeline(); fetchAllTimes(); }
   }, 900);
 }
 
 async function changeTransport(id, val, btn) {
-  const s = state.days[state.currentDayIdx].stops.find(s => s.id === id);
+  const day = state.days[state.currentDayIdx];
+  const s = day.stops.find(s=>s.id===id);
   if (!s) return;
   s.transport = val; save();
-
-  // 버튼 UI 업데이트
-  btn.closest('.transport-btns').querySelectorAll('.transport-btn').forEach(b => {
-    b.classList.toggle('active-transport', b.textContent === val);
-  });
-
-  // 해당 구간 경로 & 시간 재계산
-  routeCache = {}; // 경로 캐시 초기화 (이동수단 바꼈으니)
+  btn.closest('.transport-btns').querySelectorAll('.transport-btn').forEach(b => b.classList.toggle('active-transport', b.textContent===val));
+  routeCache = {};
   await drawAllRoutes();
-
-  // 시간 재계산
-  const day = state.days[state.currentDayIdx];
-  const idx = day.stops.findIndex(s => s.id === id);
-  const next = day.stops[idx + 1];
+  const idx = day.stops.findIndex(s=>s.id===id);
+  const next = day.stops[idx+1];
   if (!s.lat || !next?.lat) return;
-
   const key = `time_${s.lat},${s.lng}|${next.lat},${next.lng}|${val}`;
   if (timeCache[key]) { renderTimeInfo(id, val, timeCache[key]); return; }
-
   renderTimeLoading(id);
   const result = await fetchTimeByTransport(s, next, val);
   timeCache[key] = result;
@@ -647,9 +683,7 @@ async function changeTransport(id, val, btn) {
 }
 
 function addStop() {
-  state.days[state.currentDayIdx].stops.push({
-    id: uid(), time: '12:00', name: '', cat: '관광', memo: '', transport: '대중교통', lat: null, lng: null
-  });
+  state.days[state.currentDayIdx].stops.push({ id:uid(), time:'12:00', name:'', cat:'관광', memo:'', transport:'대중교통', lat:null, lng:null });
   save(); renderTimeline();
 }
 
@@ -657,44 +691,38 @@ function deleteStop(id) {
   const day = state.days[state.currentDayIdx];
   if (day.stops.length <= 1) { alert('최소 1개의 장소가 필요합니다.'); return; }
   if (!confirm('이 장소를 삭제할까요?')) return;
-  day.stops = day.stops.filter(s => s.id !== id);
-  timeCache = {}; routeCache = {};
+  day.stops = day.stops.filter(s=>s.id!==id);
+  timeCache={}; routeCache={};
   save(); drawAllRoutes(); renderTimeline(); fetchAllTimes();
 }
 
 // ══════════════════════════════════════════
 //  TABS & MODAL
 // ══════════════════════════════════════════
-function renderTabs() {
+window.renderTabs = function() {
   const tabs = document.getElementById('dayTabs');
   if (!tabs) return;
   tabs.innerHTML = '';
   state.days.forEach((day, i) => {
     const btn = document.createElement('button');
-    btn.className = `day-tab ${i === state.currentDayIdx ? 'active' : ''}`;
+    btn.className = `day-tab ${i===state.currentDayIdx?'active':''}`;
     btn.textContent = `Day ${i+1}  ${day.date}`;
-    btn.onclick = () => {
-      state.currentDayIdx = i; timeCache = {}; routeCache = {};
-      save(); renderTabs(); renderTimeline(); geocodeAll();
-    };
+    btn.onclick = () => { state.currentDayIdx=i; timeCache={}; routeCache={}; save(); renderTabs(); renderTimeline(); geocodeAll(); };
     tabs.appendChild(btn);
   });
   const add = document.createElement('button');
-  add.className = 'btn-add-day'; add.textContent = '+ 날짜 추가'; add.onclick = openModal;
+  add.className='btn-add-day'; add.textContent='+ 날짜 추가'; add.onclick=openModal;
   tabs.appendChild(add);
-}
+};
 
-function openModal() {
-  document.getElementById('newDateInput').value = new Date().toISOString().slice(0,10);
-  document.getElementById('dateModal').classList.add('show');
-}
+function openModal() { document.getElementById('newDateInput').value=new Date().toISOString().slice(0,10); document.getElementById('dateModal').classList.add('show'); }
 function closeModal() { document.getElementById('dateModal').classList.remove('show'); }
 function confirmAddDay() {
   const date = document.getElementById('newDateInput').value;
   if (!date) return;
-  state.days.push({ date, stops: [{ id: uid(), time: '09:00', name: '', cat: '관광', memo: '', transport: '대중교통', lat: null, lng: null }] });
-  state.currentDayIdx = state.days.length - 1;
-  timeCache = {}; routeCache = {};
+  state.days.push({ date, stops:[{id:uid(),time:'09:00',name:'',cat:'관광',memo:'',transport:'대중교통',lat:null,lng:null}] });
+  state.currentDayIdx = state.days.length-1;
+  timeCache={}; routeCache={};
   save(); renderTabs(); renderTimeline(); closeModal();
 }
 
@@ -702,22 +730,13 @@ function confirmAddDay() {
 //  CSV
 // ══════════════════════════════════════════
 function exportCSV() {
-  const rows = [['Day','날짜','순서','시간','장소','카테고리','메모','이동수단']];
-  state.days.forEach((day, di) => {
-    day.stops.forEach((s, si) => {
-      rows.push([`Day${di+1}`, day.date, si+1, s.time, s.name, s.cat, s.memo||'', s.transport]);
-    });
-  });
-  const csv = rows.map(r => r.map(v => `"${String(v).replace(/"/g,'""')}"`).join(',')).join('\n');
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(new Blob(['\uFEFF'+csv], { type: 'text/csv;charset=utf-8;' }));
-  a.download = '여행일정.csv'; a.click();
+  const rows=[['Day','날짜','순서','시간','장소','카테고리','메모','이동수단']];
+  state.days.forEach((day,di)=>day.stops.forEach((s,si)=>rows.push([`Day${di+1}`,day.date,si+1,s.time,s.name,s.cat,s.memo||'',s.transport])));
+  const csv=rows.map(r=>r.map(v=>`"${String(v).replace(/"/g,'""')}"`).join(',')).join('\n');
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8;'}));
+  a.download='여행일정.csv'; a.click();
 }
-
-// ══════════════════════════════════════════
-//  START
-// ══════════════════════════════════════════
-window.addEventListener('DOMContentLoaded', init);
 </script>
 </body>
 </html>
