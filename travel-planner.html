@@ -1,1039 +1,476 @@
 <!DOCTYPE html>
 <html lang="ko">
-
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>여행 플래너</title>
-  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
-  <script type="text/javascript"
-    src="//dapi.kakao.com/v2/maps/sdk.js?appkey=3a651c6517e513f7e0819dd46ae3ee23&libraries=services"></script>
-  <style>
-    *,
-    *::before,
-    *::after {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
-
-    :root {
-      --kakao: #FEE500;
-      --kakao-dark: #F0D800;
-      --bg: #F7F7F8;
-      --surface: #FFFFFF;
-      --border: #E8E8EC;
-      --text-primary: #1A1A1A;
-      --text-secondary: #6B6B7B;
-      --text-muted: #A0A0B0;
-      --accent: #3B3B4F;
-      --radius: 12px;
-      --shadow: 0 2px 12px rgba(0, 0, 0, 0.07);
-      --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.12);
-    }
-
-    body {
-      font-family: 'Noto Sans KR', sans-serif;
-      background: var(--bg);
-      color: var(--text-primary);
-      height: 100vh;
-      display: flex;
-      flex-direction: column;
-      overflow: hidden;
-    }
-
-    /* Header */
-    header {
-      background: var(--surface);
-      border-bottom: 1px solid var(--border);
-      padding: 0 24px;
-      height: 60px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      flex-shrink: 0;
-      z-index: 100;
-    }
-
-    .logo {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      font-weight: 700;
-      font-size: 16px;
-      color: var(--text-primary);
-    }
-
-    .logo-icon {
-      width: 36px;
-      height: 36px;
-      background: var(--kakao);
-      border-radius: 10px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 18px;
-    }
-
-    .btn {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      padding: 8px 16px;
-      border-radius: 8px;
-      border: none;
-      font-family: inherit;
-      font-size: 13px;
-      font-weight: 500;
-      cursor: pointer;
-      transition: all 0.15s;
-    }
-
-    .btn-outline {
-      background: transparent;
-      border: 1px solid var(--border);
-      color: var(--text-secondary);
-    }
-
-    .btn-outline:hover {
-      background: var(--bg);
-      color: var(--text-primary);
-    }
-
-    /* Day Tabs */
-    .day-tabs {
-      background: var(--surface);
-      border-bottom: 1px solid var(--border);
-      padding: 0 24px;
-      display: flex;
-      align-items: center;
-      gap: 4px;
-      flex-shrink: 0;
-      height: 48px;
-      overflow-x: auto;
-    }
-
-    .day-tab {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      padding: 6px 14px;
-      border-radius: 20px;
-      border: none;
-      background: transparent;
-      font-family: inherit;
-      font-size: 13px;
-      font-weight: 500;
-      color: var(--text-secondary);
-      cursor: pointer;
-      transition: all 0.15s;
-      white-space: nowrap;
-    }
-
-    .day-tab:hover {
-      background: var(--bg);
-      color: var(--text-primary);
-    }
-
-    .day-tab.active {
-      background: var(--accent);
-      color: #fff;
-    }
-
-    .day-tab .date-label {
-      font-size: 11px;
-      opacity: 0.7;
-      font-weight: 400;
-    }
-
-    .tab-add-btn {
-      width: 30px;
-      height: 30px;
-      border-radius: 50%;
-      border: 1.5px dashed var(--border);
-      background: transparent;
-      color: var(--text-muted);
-      font-size: 18px;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: all 0.15s;
-      margin-left: 4px;
-      flex-shrink: 0;
-    }
-
-    .tab-add-btn:hover {
-      border-color: var(--accent);
-      color: var(--accent);
-    }
-
-    /* Main Layout */
-    .main {
-      display: flex;
-      flex: 1;
-      overflow: hidden;
-    }
-
-    /* Timeline Panel */
-    .timeline-panel {
-      width: 420px;
-      flex-shrink: 0;
-      background: var(--bg);
-      display: flex;
-      flex-direction: column;
-      border-right: 1px solid var(--border);
-      overflow: hidden;
-    }
-
-    .timeline-header {
-      padding: 14px 20px 12px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      background: var(--surface);
-      border-bottom: 1px solid var(--border);
-      flex-shrink: 0;
-    }
-
-    .timeline-title {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      font-size: 13px;
-      font-weight: 600;
-    }
-
-    .place-count {
-      background: var(--bg);
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      padding: 2px 8px;
-      font-size: 11px;
-      color: var(--text-secondary);
-      font-weight: 400;
-    }
-
-    .timeline-scroll {
-      flex: 1;
-      overflow-y: auto;
-      padding: 16px 14px 80px;
-    }
-
-    .timeline-scroll::-webkit-scrollbar {
-      width: 4px;
-    }
-
-    .timeline-scroll::-webkit-scrollbar-thumb {
-      background: var(--border);
-      border-radius: 4px;
-    }
-
-    /* Timeline Item */
-    .timeline-item {
-      display: flex;
-      gap: 10px;
-      margin-bottom: 4px;
-    }
-
-    .timeline-left {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      flex-shrink: 0;
-      padding-top: 6px;
-    }
-
-    .step-dot {
-      width: 26px;
-      height: 26px;
-      border-radius: 50%;
-      background: var(--kakao);
-      color: var(--text-primary);
-      font-size: 11px;
-      font-weight: 700;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      flex-shrink: 0;
-      border: 2px solid white;
-      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
-      transition: all 0.2s;
-    }
-
-    .step-dot.highlighted {
-      background: var(--accent);
-      color: #fff;
-      transform: scale(1.1);
-    }
-
-    .connector {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 2px;
-      padding: 4px 0;
-    }
-
-    .conn-line {
-      width: 2px;
-      height: 10px;
-      background: var(--border);
-    }
-
-    .conn-icon {
-      font-size: 13px;
-      opacity: 0.5;
-    }
-
-    /* Stop Card */
-    .stop-card {
-      flex: 1;
-      background: var(--surface);
-      border: 1.5px solid var(--border);
-      border-radius: var(--radius);
-      padding: 12px 12px 10px;
-      box-shadow: var(--shadow);
-      transition: all 0.2s;
-      cursor: pointer;
-      margin-bottom: 4px;
-    }
-
-    .stop-card:hover {
-      box-shadow: var(--shadow-lg);
-    }
-
-    .stop-card.highlighted {
-      border-color: var(--kakao);
-      box-shadow: 0 0 0 2px rgba(254, 229, 0, 0.4);
-    }
-
-    .stop-top {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      margin-bottom: 8px;
-    }
-
-    .stop-time {
-      border: none;
-      outline: none;
-      font-family: inherit;
-      font-size: 11px;
-      color: var(--text-muted);
-      background: transparent;
-      width: 54px;
-      font-weight: 500;
-      cursor: pointer;
-    }
-
-    .stop-name {
-      flex: 1;
-      border: none;
-      outline: none;
-      font-family: inherit;
-      font-size: 14px;
-      font-weight: 600;
-      color: var(--text-primary);
-      background: transparent;
-    }
-
-    .stop-name::placeholder {
-      color: var(--text-muted);
-      font-weight: 400;
-    }
-
-    .card-actions {
-      display: flex;
-      gap: 2px;
-    }
-
-    .icon-btn {
-      width: 24px;
-      height: 24px;
-      border-radius: 6px;
-      border: none;
-      background: transparent;
-      color: var(--text-muted);
-      font-size: 12px;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: all 0.15s;
-    }
-
-    .icon-btn:hover {
-      background: var(--bg);
-      color: var(--text-primary);
-    }
-
-    .icon-btn.del:hover {
-      background: #FFF0F0;
-      color: #E53E3E;
-    }
-
-    .stop-meta {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      flex-wrap: wrap;
-    }
-
-    .cat-select {
-      border: 1px solid var(--border);
-      border-radius: 20px;
-      padding: 3px 8px;
-      font-family: inherit;
-      font-size: 11px;
-      color: var(--text-secondary);
-      background: var(--bg);
-      outline: none;
-      cursor: pointer;
-    }
-
-    .memo-inp {
-      flex: 1;
-      border: none;
-      outline: none;
-      font-family: inherit;
-      font-size: 11px;
-      color: var(--text-secondary);
-      background: transparent;
-      min-width: 60px;
-    }
-
-    .memo-inp::placeholder {
-      color: var(--text-muted);
-    }
-
-    .transport-row {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      margin-top: 8px;
-      padding-top: 8px;
-      border-top: 1px solid var(--bg);
-    }
-
-    .transport-label {
-      font-size: 10px;
-      color: var(--text-muted);
-      font-weight: 500;
-    }
-
-    .transport-btns {
-      display: flex;
-      gap: 3px;
-    }
-
-    .t-btn {
-      width: 28px;
-      height: 28px;
-      border-radius: 7px;
-      border: 1.5px solid var(--border);
-      background: var(--surface);
-      font-size: 13px;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: all 0.15s;
-    }
-
-    .t-btn:hover {
-      border-color: var(--kakao);
-    }
-
-    .t-btn.active {
-      border-color: var(--accent);
-      background: var(--accent);
-    }
-
-    /* Add Stop */
-    .add-stop-btn {
-      width: 100%;
-      padding: 11px;
-      border: 1.5px dashed var(--border);
-      border-radius: var(--radius);
-      background: transparent;
-      color: var(--text-muted);
-      font-family: inherit;
-      font-size: 13px;
-      cursor: pointer;
-      transition: all 0.15s;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 6px;
-      margin-top: 6px;
-    }
-
-    .add-stop-btn:hover {
-      border-color: var(--accent);
-      color: var(--accent);
-      background: rgba(59, 59, 79, 0.03);
-    }
-
-    /* Footer */
-    .day-footer {
-      padding: 10px 20px;
-      background: var(--surface);
-      border-top: 1px solid var(--border);
-      display: flex;
-      justify-content: space-between;
-      font-size: 12px;
-      color: var(--text-secondary);
-      flex-shrink: 0;
-    }
-
-    /* Map Panel */
-    .map-panel {
-      flex: 1;
-      position: relative;
-      overflow: hidden;
-    }
-
-    #kakao-map {
-      width: 100%;
-      height: 100%;
-    }
-
-    .geocode-status {
-      position: absolute;
-      top: 14px;
-      left: 14px;
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: 8px 14px;
-      font-size: 12px;
-      color: var(--text-secondary);
-      box-shadow: var(--shadow);
-      z-index: 10;
-      display: none;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .geocode-status.show {
-      display: flex;
-    }
-
-    .spinner {
-      width: 13px;
-      height: 13px;
-      border: 2px solid var(--border);
-      border-top-color: var(--accent);
-      border-radius: 50%;
-      animation: spin 0.7s linear infinite;
-    }
-
-    @keyframes spin {
-      to {
-        transform: rotate(360deg);
-      }
-    }
-
-    .map-controls {
-      position: absolute;
-      top: 14px;
-      right: 14px;
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-      z-index: 10;
-    }
-
-    .map-ctrl-btn {
-      width: 38px;
-      height: 38px;
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      font-size: 16px;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      box-shadow: var(--shadow);
-      transition: all 0.15s;
-    }
-
-    .map-ctrl-btn:hover {
-      box-shadow: var(--shadow-lg);
-    }
-
-    .map-info {
-      position: absolute;
-      bottom: 14px;
-      left: 14px;
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      padding: 8px 14px;
-      font-size: 12px;
-      color: var(--text-secondary);
-      box-shadow: var(--shadow);
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
-
-    /* Toast */
-    .toast {
-      position: fixed;
-      bottom: 24px;
-      left: 50%;
-      transform: translateX(-50%) translateY(80px);
-      background: var(--accent);
-      color: #fff;
-      padding: 10px 20px;
-      border-radius: 20px;
-      font-size: 13px;
-      font-weight: 500;
-      z-index: 9999;
-      transition: transform 0.3s ease;
-      pointer-events: none;
-    }
-
-    .toast.show {
-      transform: translateX(-50%) translateY(0);
-    }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>여행 플래너</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
+<script type="text/javascript" src="//dapi.kakao.com/v2/maps/sdk.js?appkey=3a651c6517e513f7e0819dd46ae3ee23&libraries=services"></script>
+<style>
+  :root {
+    --yellow: #FEE500;
+    --yellow-dark: #E6CE00;
+    --bg: #F7F7F8;
+    --white: #FFFFFF;
+    --text: #1A1A1A;
+    --text-sub: #6B6B6B;
+    --text-muted: #ABABAB;
+    --border: #E5E5E5;
+    --shadow: 0 2px 12px rgba(0,0,0,0.08);
+    --radius: 12px;
+    --cat-tour: #4A90D9;
+    --cat-meal: #E85D4A;
+    --cat-hotel: #7B68EE;
+    --cat-move: #52C788;
+    --walk-color: #52C788;
+    --car-color: #4A90D9;
+    --bus-color: #E85D4A;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Noto Sans KR', sans-serif; background: var(--bg); color: var(--text); height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
+
+  header { background: var(--white); border-bottom: 1px solid var(--border); padding: 0 24px; height: 56px; display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; z-index: 100; }
+  .logo { display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 17px; }
+  .logo-icon { width: 32px; height: 32px; background: var(--yellow); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 16px; }
+  .btn { padding: 7px 14px; border-radius: 8px; border: none; cursor: pointer; font-family: inherit; font-size: 13px; font-weight: 500; transition: all 0.15s; }
+  .btn-ghost { background: transparent; border: 1px solid var(--border); color: var(--text-sub); }
+  .btn-ghost:hover { background: var(--bg); }
+
+  .day-tabs { background: var(--white); border-bottom: 1px solid var(--border); padding: 0 24px; display: flex; align-items: center; gap: 4px; height: 46px; flex-shrink: 0; overflow-x: auto; }
+  .day-tab { padding: 6px 16px; border-radius: 20px; border: none; background: transparent; cursor: pointer; font-family: inherit; font-size: 13px; font-weight: 500; color: var(--text-sub); white-space: nowrap; transition: all 0.15s; display: flex; align-items: center; gap: 6px; }
+  .day-tab:hover { background: var(--bg); }
+  .day-tab.active { background: var(--yellow); color: var(--text); }
+  .day-tab .day-date { font-size: 11px; font-weight: 400; opacity: 0.7; }
+  .btn-add-day { padding: 6px 12px; border-radius: 20px; border: 1px dashed var(--border); background: transparent; cursor: pointer; font-size: 13px; color: var(--text-muted); font-family: inherit; transition: all 0.15s; white-space: nowrap; }
+  .btn-add-day:hover { border-color: var(--text-sub); color: var(--text-sub); }
+
+  .main { display: flex; flex: 1; overflow: hidden; }
+
+  .timeline-panel { width: 440px; flex-shrink: 0; display: flex; flex-direction: column; background: var(--bg); border-right: 1px solid var(--border); overflow: hidden; }
+  .timeline-header { padding: 16px 20px 12px; display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; }
+  .timeline-title { font-size: 14px; font-weight: 700; display: flex; align-items: center; gap: 8px; }
+  .stop-count { background: var(--yellow); padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 500; }
+  .timeline-scroll { flex: 1; overflow-y: auto; padding: 0 16px 16px; }
+  .timeline-scroll::-webkit-scrollbar { width: 4px; }
+  .timeline-scroll::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+  .stop-wrapper { display: flex; gap: 12px; margin-bottom: 4px; }
+  .stop-line { display: flex; flex-direction: column; align-items: center; padding-top: 18px; flex-shrink: 0; }
+  .stop-dot { width: 28px; height: 28px; border-radius: 50%; background: var(--white); border: 2px solid var(--border); display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; color: var(--text-sub); flex-shrink: 0; transition: all 0.2s; }
+  .stop-dot.active-dot { background: var(--yellow); border-color: var(--yellow); color: var(--text); }
+  .stop-connector { width: 2px; flex: 1; background: var(--border); margin: 4px 0; min-height: 20px; }
+  .stop-card { flex: 1; background: var(--white); border-radius: var(--radius); padding: 14px; border: 1px solid var(--border); cursor: pointer; transition: all 0.15s; }
+  .stop-card:hover { box-shadow: var(--shadow); }
+  .stop-card.highlighted { border-color: var(--yellow); box-shadow: 0 0 0 2px rgba(254,229,0,0.3); }
+  .stop-card-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+  .stop-time input[type="time"] { border: none; background: var(--bg); border-radius: 6px; padding: 3px 6px; font-family: inherit; font-size: 12px; color: var(--text); cursor: pointer; outline: none; }
+  .stop-delete { background: none; border: none; cursor: pointer; color: var(--text-muted); font-size: 16px; padding: 2px 4px; border-radius: 4px; transition: all 0.15s; line-height: 1; }
+  .stop-delete:hover { background: #fee; color: #e85d4a; }
+  .stop-name-input { width: 100%; border: none; background: transparent; font-family: inherit; font-size: 15px; font-weight: 700; color: var(--text); outline: none; margin-bottom: 8px; }
+  .stop-name-input::placeholder { color: var(--text-muted); font-weight: 400; }
+  .stop-meta { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .cat-select { border: none; border-radius: 20px; padding: 3px 10px; font-family: inherit; font-size: 11px; font-weight: 500; cursor: pointer; outline: none; }
+  .cat-관광 { background: #EBF4FF; color: var(--cat-tour); }
+  .cat-식사 { background: #FEF0EE; color: var(--cat-meal); }
+  .cat-숙소 { background: #F0EEFF; color: var(--cat-hotel); }
+  .cat-이동 { background: #EDFAF3; color: var(--cat-move); }
+  .memo-input { flex: 1; border: none; background: transparent; font-family: inherit; font-size: 12px; color: var(--text-sub); outline: none; min-width: 0; }
+  .memo-input::placeholder { color: var(--text-muted); }
+
+  .transport-row { margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--bg); }
+  .transport-btns { display: flex; align-items: center; gap: 6px; margin-bottom: 8px; }
+  .transport-label { font-size: 11px; color: var(--text-muted); }
+  .transport-btn { padding: 3px 10px; border-radius: 20px; border: 1px solid var(--border); background: transparent; font-family: inherit; font-size: 11px; cursor: pointer; color: var(--text-sub); transition: all 0.15s; }
+  .transport-btn.active-transport { background: var(--text); color: var(--white); border-color: var(--text); }
+
+  /* 소요시간 뱃지 */
+  .travel-time-display { display: flex; gap: 6px; flex-wrap: wrap; }
+  .time-badge { display: inline-flex; align-items: center; gap: 4px; padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 500; }
+  .time-badge.walk { background: #EDFAF3; color: var(--walk-color); }
+  .time-badge.car  { background: #EBF4FF; color: var(--car-color); }
+  .time-badge.bus  { background: #FEF0EE; color: var(--bus-color); }
+  .time-badge.loading { background: var(--bg); color: var(--text-muted); animation: pulse 1.2s infinite; }
+  .time-badge.error { background: var(--bg); color: var(--text-muted); }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+
+  .btn-add-stop { width: 100%; padding: 12px; border: 1px dashed var(--border); border-radius: var(--radius); background: transparent; font-family: inherit; font-size: 13px; color: var(--text-muted); cursor: pointer; transition: all 0.15s; margin-top: 4px; }
+  .btn-add-stop:hover { border-color: var(--yellow); color: var(--text); background: #FFFDE7; }
+
+  .timeline-footer { padding: 12px 20px; border-top: 1px solid var(--border); background: var(--white); display: flex; justify-content: space-between; align-items: center; flex-shrink: 0; }
+  .footer-label { font-size: 13px; color: var(--text-sub); }
+  .footer-value { font-size: 13px; font-weight: 700; }
+
+  .map-panel { flex: 1; position: relative; }
+  #kakaoMap { width: 100%; height: 100%; }
+
+  .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.3); z-index: 1000; display: none; align-items: center; justify-content: center; }
+  .modal-overlay.show { display: flex; }
+  .modal { background: var(--white); border-radius: 16px; padding: 24px; width: 320px; box-shadow: 0 8px 32px rgba(0,0,0,0.15); }
+  .modal h3 { font-size: 16px; margin-bottom: 16px; }
+  .modal input[type="date"] { width: 100%; padding: 10px 14px; border: 1px solid var(--border); border-radius: 8px; font-family: inherit; font-size: 14px; margin-bottom: 16px; outline: none; }
+  .modal-actions { display: flex; gap: 8px; justify-content: flex-end; }
+</style>
 </head>
-
 <body>
 
-  <header>
-    <div class="logo">
-      <div class="logo-icon">🗺️</div>
-      <span>여행 플래너</span>
-    </div>
-    <div>
-      <button class="btn btn-outline" onclick="exportCSV()">⬇ CSV 내보내기</button>
-    </div>
-  </header>
+<header>
+  <div class="logo">
+    <div class="logo-icon">🗺️</div>
+    <span>여행 플래너</span>
+  </div>
+  <button class="btn btn-ghost" onclick="exportCSV()">⬇ CSV 내보내기</button>
+</header>
 
-  <div class="day-tabs" id="dayTabs"></div>
+<div class="day-tabs" id="dayTabs"></div>
 
-  <div class="main">
-    <div class="timeline-panel">
-      <div class="timeline-header">
-        <div class="timeline-title">
-          📋 일정 타임라인
-          <span class="place-count" id="placeCount">0개 장소</span>
-        </div>
-      </div>
-      <div class="timeline-scroll" id="timelineScroll"></div>
-      <div class="day-footer">
-        <span id="footerStops">장소 0곳</span>
-        <span id="footerMoves">이동 0회</span>
+<div class="main">
+  <div class="timeline-panel">
+    <div class="timeline-header">
+      <div class="timeline-title">
+        📋 일정 타임라인
+        <span class="stop-count" id="stopCount">0개 장소</span>
       </div>
     </div>
-
-    <div class="map-panel">
-      <div id="kakao-map"></div>
-      <div class="geocode-status" id="geocodeStatus">
-        <div class="spinner"></div>
-        <span>위치 검색 중...</span>
-      </div>
-      <div class="map-controls">
-        <button class="map-ctrl-btn" onclick="fitAll()" title="전체 보기">⊕</button>
-        <button class="map-ctrl-btn" onclick="toggleSatellite()" title="위성지도">🛰</button>
-      </div>
-      <div class="map-info">
-        📍 <strong id="mapStops">0</strong>개 장소 &nbsp;|&nbsp;
-        🔗 <strong id="mapRoutes">0</strong>개 구간
-      </div>
+    <div class="timeline-scroll" id="timelineScroll"></div>
+    <div class="timeline-footer">
+      <span class="footer-label">총 장소</span>
+      <span class="footer-value" id="totalCount">0개</span>
     </div>
   </div>
+  <div class="map-panel">
+    <div id="kakaoMap"></div>
+  </div>
+</div>
 
-  <div class="toast" id="toast"></div>
+<div class="modal-overlay" id="dateModal">
+  <div class="modal">
+    <h3>📅 날짜 추가</h3>
+    <input type="date" id="newDateInput">
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal()">취소</button>
+      <button class="btn btn-ghost" style="background:var(--yellow);border-color:var(--yellow);color:#1A1A1A;" onclick="confirmAddDay()">추가</button>
+    </div>
+  </div>
+</div>
 
-  <script>
-    // ════════════════════════════════════
-    // ⚠️  여기에 카카오 REST API 키를 입력하세요
-    const KAKAO_REST_KEY = 'df3b8dcb49a5702a7d40fae940ad3e17';
-    // ════════════════════════════════════
+<script>
+// ── 키 설정 ──
+const KAKAO_REST_KEY = 'df3b8dcb49a5702a7d40fae940ad3e17';
+const ODSAY_KEY     = 'V1hY1ycdWsswHGFswy3HJQ';
 
-    let days = [];
-    let currentDay = 0;
-    let map = null;
-    let markers = [];
-    let polylines = [];
-    let overlays = [];
-    let isSatellite = false;
-    let geocodeTimer = null;
+let state = { days: [], currentDayIdx: 0 };
+let timeCache = {}; // { "lat,lng-lat,lng": { walk, car, bus } }
 
-    const TRANSPORT = { walk: '🚶', transit: '🚌', car: '🚗' };
-    const CATS = ['관광', '식사', '숙소', '이동', '쇼핑', '기타'];
+function uid() { return Math.random().toString(36).slice(2,9); }
+function save() { localStorage.setItem('tp-v3', JSON.stringify(state)); }
 
-    function uid() { return Math.random().toString(36).slice(2, 9); }
+// ── INIT ──
+function init() {
+  const saved = localStorage.getItem('tp-v3');
+  if (saved) { state = JSON.parse(saved); }
+  else {
+    const today = new Date().toISOString().slice(0,10);
+    state.days = [{
+      date: today,
+      stops: [
+        { id:uid(), time:'09:00', name:'경복궁',      cat:'관광', memo:'한복 입고 입장하기', transport:'대중교통', lat:null, lng:null },
+        { id:uid(), time:'12:00', name:'광장시장',    cat:'식사', memo:'육회비빔밥 먹기',   transport:'도보',     lat:null, lng:null },
+        { id:uid(), time:'14:00', name:'북촌한옥마을',cat:'관광', memo:'사진 스팟 탐방',   transport:'자동차',   lat:null, lng:null },
+      ]
+    }];
+  }
+  initMap();
+  renderTabs();
+  renderTimeline();
+  geocodeAll();
+}
 
-    function save() { localStorage.setItem('tp-v3', JSON.stringify(days)); }
+// ── MAP ──
+let map, markers=[], polylines=[];
 
-    function init() {
-      const raw = localStorage.getItem('tp-v3');
-      if (raw) {
-        days = JSON.parse(raw);
-      } else {
-        days = [{
-          id: uid(), date: '2026-04-01',
-          stops: [
-            { id: uid(), time: '09:00', name: '경복궁', category: '관광', memo: '한복 입고 입장하기', transport: 'walk' },
-            { id: uid(), time: '12:00', name: '광장시장', category: '식사', memo: '빈대떡, 마약김밥', transport: 'transit' },
-            { id: uid(), time: '14:30', name: '북촌한옥마을', category: '관광', memo: '', transport: 'walk' },
-          ]
-        }];
-      }
-      initMap();
-      renderTabs();
-      renderTimeline();
+function initMap() {
+  map = new kakao.maps.Map(document.getElementById('kakaoMap'), {
+    center: new kakao.maps.LatLng(37.5665, 126.9780), level: 7
+  });
+}
+
+async function geocodeAll() {
+  const day = state.days[state.currentDayIdx];
+  if (!day) return;
+  for (const s of day.stops) {
+    if (s.name && (!s.lat || !s.lng)) {
+      const c = await geocode(s.name);
+      if (c) { s.lat = c.lat; s.lng = c.lng; }
     }
+  }
+  save(); renderMap(); fetchAllTimes();
+}
 
-    // ── MAP ──────────────────────────────
-    function initMap() {
-      map = new kakao.maps.Map(document.getElementById('kakao-map'), {
-        center: new kakao.maps.LatLng(37.5665, 126.9780),
-        level: 7
-      });
-      updateMap();
-    }
+async function geocode(name) {
+  try {
+    const r = await fetch(`https://dapi.kakao.com/v2/local/search/keyword.json?query=${encodeURIComponent(name)}&size=1`,
+      { headers: { Authorization: `KakaoAK ${KAKAO_REST_KEY}` } });
+    const d = await r.json();
+    if (d.documents?.length) return { lat: parseFloat(d.documents[0].y), lng: parseFloat(d.documents[0].x) };
+  } catch(e) {}
+  return null;
+}
 
-    function clearMap() {
-      markers.forEach(m => m.setMap(null));
-      polylines.forEach(p => p.setMap(null));
-      overlays.forEach(o => o.setMap(null));
-      markers = []; polylines = []; overlays = [];
-    }
+function renderMap() {
+  markers.forEach(m => m.setMap(null));
+  polylines.forEach(p => p.setMap(null));
+  markers=[]; polylines=[];
+  const day = state.days[state.currentDayIdx];
+  if (!day) return;
+  const valid = day.stops.filter(s => s.lat && s.lng);
+  if (!valid.length) return;
+  const bounds = new kakao.maps.LatLngBounds();
+  valid.forEach((s, i) => {
+    const pos = new kakao.maps.LatLng(s.lat, s.lng);
+    bounds.extend(pos);
+    const div = document.createElement('div');
+    div.style.cssText = 'background:#FEE500;border-radius:50%;width:28px;height:28px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;border:2px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,0.2);cursor:pointer;';
+    div.textContent = i+1;
+    div.onclick = () => highlightCard(s.id);
+    const ov = new kakao.maps.CustomOverlay({ position:pos, content:div, yAnchor:0.5 });
+    ov.setMap(map); markers.push(ov);
+  });
+  if (valid.length > 1) {
+    const poly = new kakao.maps.Polyline({ path: valid.map(s => new kakao.maps.LatLng(s.lat, s.lng)), strokeWeight:2, strokeColor:'#FEE500', strokeOpacity:0.9 });
+    poly.setMap(map); polylines.push(poly);
+  }
+  map.setBounds(bounds);
+}
 
-    async function updateMap() {
-      clearMap();
-      const stops = days[currentDay]?.stops.filter(s => s.name.trim()) || [];
-      if (!stops.length) { updateMapInfo(0, 0); return; }
+function highlightCard(id) {
+  document.querySelectorAll('.stop-card').forEach(c => c.classList.remove('highlighted'));
+  const el = document.querySelector(`[data-id="${id}"]`);
+  if (el) { el.classList.add('highlighted'); el.scrollIntoView({ behavior:'smooth', block:'nearest' }); }
+}
 
-      showStatus(true);
-      const coords = await Promise.all(stops.map(s => geocode(s.name)));
-      showStatus(false);
+// ── 소요시간 fetch ──
+async function fetchAllTimes() {
+  const day = state.days[state.currentDayIdx];
+  if (!day) return;
+  for (let i = 0; i < day.stops.length - 1; i++) {
+    const a = day.stops[i], b = day.stops[i+1];
+    if (!a.lat || !b.lat) continue;
+    const key = `${a.lat},${a.lng}-${b.lat},${b.lng}`;
+    if (timeCache[key]) { renderBadge(a.id, timeCache[key]); continue; }
 
-      const pts = [];
-      coords.forEach((c, i) => {
-        if (!c) return;
-        const pos = new kakao.maps.LatLng(c.lat, c.lng);
-        pts.push({ pos, stop: stops[i], idx: i });
-      });
+    renderBadge(a.id, null, true); // 로딩 표시
 
-      pts.forEach(({ pos, stop, idx }) => {
-        // Marker
-        const isFirst = idx === 0;
-        const el = document.createElement('div');
-        el.style.cssText = `
-      width:28px;height:28px;border-radius:50%;
-      background:${isFirst ? '#FEE500' : '#3B3B4F'};
-      color:${isFirst ? '#1A1A1A' : '#fff'};
-      font-size:11px;font-weight:700;
-      display:flex;align-items:center;justify-content:center;
-      border:3px solid white;
-      box-shadow:0 2px 8px rgba(0,0,0,0.25);
-      cursor:pointer;
-      font-family:'Noto Sans KR',sans-serif;
-      transition:transform 0.15s;
-    `;
-        el.textContent = idx + 1;
+    const [car, walk, bus] = await Promise.all([
+      fetchCarTime(a, b),
+      fetchWalkTime(a, b),
+      fetchBusTime(a, b)
+    ]);
 
-        const marker = new kakao.maps.CustomOverlay({ position: pos, content: el, yAnchor: 0.5 });
-        marker.setMap(map);
-        markers.push(marker);
+    timeCache[key] = { car, walk, bus };
+    renderBadge(a.id, timeCache[key]);
+  }
+}
 
-        // Info popup
-        const popup = document.createElement('div');
-        popup.style.cssText = `
-      background:white;padding:8px 12px;border-radius:10px;
-      box-shadow:0 4px 20px rgba(0,0,0,0.15);
-      font-family:'Noto Sans KR',sans-serif;font-size:12px;
-      min-width:130px;border:1px solid #E8E8EC;
-      white-space:nowrap;
-    `;
-        popup.innerHTML = `
-      <div style="font-weight:600;margin-bottom:2px;">${stop.name}</div>
-      <div style="color:#6B6B7B;">${stop.time} · ${stop.category}</div>
-      ${stop.memo ? `<div style="color:#A0A0B0;margin-top:2px;font-size:11px;">${stop.memo}</div>` : ''}
-    `;
+async function fetchCarTime(a, b) {
+  try {
+    const r = await fetch(
+      `https://apis-navi.kakaomobility.com/v1/directions?origin=${a.lng},${a.lat}&destination=${b.lng},${b.lat}&priority=RECOMMEND`,
+      { headers: { Authorization: `KakaoAK ${KAKAO_REST_KEY}` } }
+    );
+    const d = await r.json();
+    const sec = d.routes?.[0]?.summary?.duration;
+    return sec ? Math.round(sec/60) : null;
+  } catch(e) { return null; }
+}
 
-        const infoOverlay = new kakao.maps.CustomOverlay({ position: pos, content: popup, yAnchor: 2.3 });
-        overlays.push(infoOverlay);
+async function fetchWalkTime(a, b) {
+  // 카카오 도보 API 미제공 → 직선거리 기반 추정 (4km/h)
+  try {
+    const R = 6371000;
+    const dLat = (b.lat - a.lat) * Math.PI/180;
+    const dLng = (b.lng - a.lng) * Math.PI/180;
+    const aa = Math.sin(dLat/2)**2 + Math.cos(a.lat*Math.PI/180)*Math.cos(b.lat*Math.PI/180)*Math.sin(dLng/2)**2;
+    const dist = R * 2 * Math.atan2(Math.sqrt(aa), Math.sqrt(1-aa));
+    return Math.round(dist / 67); // 67m/min ≈ 4km/h
+  } catch(e) { return null; }
+}
 
-        let open = false;
-        el.addEventListener('click', () => {
-          open = !open;
-          infoOverlay.setMap(open ? map : null);
-          highlightCard(stop.id);
-        });
+async function fetchBusTime(a, b) {
+  try {
+    const url = `https://api.odsay.com/v1/api/searchPubTransPathT?SX=${a.lng}&SY=${a.lat}&EX=${b.lng}&EY=${b.lat}&apiKey=${encodeURIComponent(ODSAY_KEY)}`;
+    const r = await fetch(url);
+    const d = await r.json();
+    return d.result?.path?.[0]?.info?.totalTime ?? null;
+  } catch(e) { return null; }
+}
 
-        el.addEventListener('mouseenter', () => { el.style.transform = 'scale(1.15)'; });
-        el.addEventListener('mouseleave', () => { el.style.transform = 'scale(1)'; });
-      });
+function renderBadge(stopId, times, loading=false) {
+  const el = document.querySelector(`[data-id="${stopId}"] .travel-time-display`);
+  if (!el) return;
+  if (loading) { el.innerHTML = `<span class="time-badge loading">⏳ 계산 중...</span>`; return; }
+  if (!times) return;
+  let html = '';
+  if (times.walk != null) html += `<span class="time-badge walk">🚶 ${times.walk}분</span>`;
+  if (times.car  != null) html += `<span class="time-badge car">🚗 ${times.car}분</span>`;
+  if (times.bus  != null) html += `<span class="time-badge bus">🚌 ${times.bus}분</span>`;
+  if (!html) html = `<span class="time-badge error">경로 정보 없음</span>`;
+  el.innerHTML = html;
+}
 
-      // Polyline
-      if (pts.length > 1) {
-        const line = new kakao.maps.Polyline({
-          path: pts.map(p => p.pos),
-          strokeWeight: 2.5,
-          strokeColor: '#3B3B4F',
-          strokeOpacity: 0.5,
-          strokeStyle: 'shortdash',
-        });
-        line.setMap(map);
-        polylines.push(line);
-      }
+// ── TIMELINE ──
+function renderTimeline() {
+  const day = state.days[state.currentDayIdx];
+  const scroll = document.getElementById('timelineScroll');
+  scroll.innerHTML = '';
+  if (!day) return;
 
-      updateMapInfo(pts.length, Math.max(0, pts.length - 1));
-      if (pts.length) {
-        const bounds = new kakao.maps.LatLngBounds();
-        pts.forEach(p => bounds.extend(p.pos));
-        map.setBounds(bounds);
-      }
-    }
-
-    async function geocode(name) {
-      try {
-        const res = await fetch(
-          `https://dapi.kakao.com/v2/local/search/keyword.json?query=${encodeURIComponent(name)}&size=1`,
-          { headers: { Authorization: `KakaoAK ${KAKAO_REST_KEY}` } }
-        );
-        const data = await res.json();
-        if (data.documents?.length) {
-          return { lat: parseFloat(data.documents[0].y), lng: parseFloat(data.documents[0].x) };
-        }
-      } catch (e) { }
-      return null;
-    }
-
-    function fitAll() {
-      if (!markers.length) return;
-      const bounds = new kakao.maps.LatLngBounds();
-      markers.forEach(m => bounds.extend(m.getPosition()));
-      map.setBounds(bounds);
-    }
-
-    function toggleSatellite() {
-      isSatellite = !isSatellite;
-      map.setMapTypeId(isSatellite ? kakao.maps.MapTypeId.HYBRID : kakao.maps.MapTypeId.ROADMAP);
-    }
-
-    function showStatus(v) {
-      document.getElementById('geocodeStatus').className = 'geocode-status' + (v ? ' show' : '');
-    }
-
-    function updateMapInfo(s, r) {
-      document.getElementById('mapStops').textContent = s;
-      document.getElementById('mapRoutes').textContent = r;
-    }
-
-    // ── TABS ─────────────────────────────
-    function renderTabs() {
-      const el = document.getElementById('dayTabs');
-      el.innerHTML = '';
-      days.forEach((d, i) => {
-        const btn = document.createElement('button');
-        btn.className = 'day-tab' + (i === currentDay ? ' active' : '');
-        btn.innerHTML = `Day ${i + 1} <span class="date-label">${d.date}</span>`;
-        btn.onclick = () => switchDay(i);
-        el.appendChild(btn);
-      });
-      const add = document.createElement('button');
-      add.className = 'tab-add-btn';
-      add.textContent = '+';
-      add.title = '날짜 추가';
-      add.onclick = addDay;
-      el.appendChild(add);
-    }
-
-    function switchDay(i) {
-      currentDay = i;
-      renderTabs();
-      renderTimeline();
-      updateMap();
-    }
-
-    function addDay() {
-      const last = days[days.length - 1];
-      const d = new Date(last ? last.date : new Date().toISOString().slice(0, 10));
-      d.setDate(d.getDate() + 1);
-      days.push({ id: uid(), date: d.toISOString().slice(0, 10), stops: [] });
-      save();
-      switchDay(days.length - 1);
-    }
-
-    // ── TIMELINE ─────────────────────────
-    function renderTimeline() {
-      const stops = days[currentDay]?.stops || [];
-      const el = document.getElementById('timelineScroll');
-      el.innerHTML = '';
-
-      stops.forEach((stop, i) => {
-        const isLast = i === stops.length - 1;
-
-        const item = document.createElement('div');
-        item.className = 'timeline-item';
-
-        // Left column
-        const left = document.createElement('div');
-        left.className = 'timeline-left';
-
-        const dot = document.createElement('div');
-        dot.className = 'step-dot';
-        dot.id = `dot-${stop.id}`;
-        dot.textContent = i + 1;
-        left.appendChild(dot);
-
-        if (!isLast) {
-          const conn = document.createElement('div');
-          conn.className = 'connector';
-          conn.innerHTML = `
-        <div class="conn-line"></div>
-        <div class="conn-icon">${TRANSPORT[stop.transport] || '🚶'}</div>
-        <div class="conn-line"></div>
-      `;
-          left.appendChild(conn);
-        }
-
-        // Card
-        const card = document.createElement('div');
-        card.className = 'stop-card';
-        card.id = `card-${stop.id}`;
-        card.onclick = () => highlightCard(stop.id);
-
-        card.innerHTML = `
-      <div class="stop-top">
-        <input class="stop-time" type="time" value="${stop.time}"
-          onchange="updateField('${stop.id}', 'time', this.value)">
-        <input class="stop-name" type="text" value="${stop.name}"
-          placeholder="장소명 입력..."
-          onchange="updateField('${stop.id}', 'name', this.value)"
-          oninput="scheduleUpdate()">
-        <div class="card-actions">
-          <button class="icon-btn" onclick="moveStop('${stop.id}',-1);event.stopPropagation();" title="위로">↑</button>
-          <button class="icon-btn" onclick="moveStop('${stop.id}',1);event.stopPropagation();" title="아래로">↓</button>
-          <button class="icon-btn del" onclick="delStop('${stop.id}');event.stopPropagation();" title="삭제">✕</button>
-        </div>
+  day.stops.forEach((stop, i) => {
+    const isLast = i === day.stops.length - 1;
+    const w = document.createElement('div');
+    w.className = 'stop-wrapper';
+    w.innerHTML = `
+      <div class="stop-line">
+        <div class="stop-dot ${stop.lat?'active-dot':''}">${i+1}</div>
+        ${!isLast?'<div class="stop-connector"></div>':''}
       </div>
-      <div class="stop-meta">
-        <select class="cat-select" onchange="updateField('${stop.id}','category',this.value)">
-          ${CATS.map(c => `<option ${c === stop.category ? 'selected' : ''}>${c}</option>`).join('')}
-        </select>
-        <input class="memo-inp" type="text" value="${stop.memo}" placeholder="메모..."
-          onchange="updateField('${stop.id}','memo',this.value)">
-      </div>
-      ${!isLast ? `
-      <div class="transport-row">
-        <span class="transport-label">다음 장소까지</span>
-        <div class="transport-btns">
-          <button class="t-btn ${stop.transport === 'walk' ? 'active' : ''}"
-            onclick="updateField('${stop.id}','transport','walk');renderTimeline();event.stopPropagation();" title="도보">🚶</button>
-          <button class="t-btn ${stop.transport === 'transit' ? 'active' : ''}"
-            onclick="updateField('${stop.id}','transport','transit');renderTimeline();event.stopPropagation();" title="대중교통">🚌</button>
-          <button class="t-btn ${stop.transport === 'car' ? 'active' : ''}"
-            onclick="updateField('${stop.id}','transport','car');renderTimeline();event.stopPropagation();" title="자동차">🚗</button>
+      <div class="stop-card" data-id="${stop.id}">
+        <div class="stop-card-top">
+          <input type="time" value="${stop.time}" style="border:none;background:var(--bg);border-radius:6px;padding:3px 6px;font-family:inherit;font-size:12px;outline:none;"
+            onchange="updateStop('${stop.id}','time',this.value)">
+          <button class="stop-delete" onclick="deleteStop('${stop.id}')">✕</button>
         </div>
-      </div>` : ''}
-    `;
+        <input class="stop-name-input" placeholder="장소 이름 입력" value="${stop.name}"
+          oninput="updateStopName('${stop.id}',this.value)">
+        <div class="stop-meta">
+          <select class="cat-select cat-${stop.cat}" onchange="updateStop('${stop.id}','cat',this.value);this.className='cat-select cat-'+this.value">
+            <option value="관광" ${stop.cat==='관광'?'selected':''}>관광</option>
+            <option value="식사" ${stop.cat==='식사'?'selected':''}>식사</option>
+            <option value="숙소" ${stop.cat==='숙소'?'selected':''}>숙소</option>
+            <option value="이동" ${stop.cat==='이동'?'selected':''}>이동</option>
+          </select>
+          <input class="memo-input" placeholder="메모 추가..." value="${stop.memo||''}"
+            onchange="updateStop('${stop.id}','memo',this.value)">
+        </div>
+        ${!isLast?`
+        <div class="transport-row">
+          <div class="transport-btns">
+            <span class="transport-label">이동수단</span>
+            ${['도보','대중교통','자동차'].map(t=>`
+              <button class="transport-btn ${stop.transport===t?'active-transport':''}"
+                onclick="updateTransport('${stop.id}','${t}',this)">${t}</button>
+            `).join('')}
+          </div>
+          <div class="travel-time-display">
+            <span class="time-badge loading">⏳ 계산 중...</span>
+          </div>
+        </div>`:''}
+      </div>`;
+    scroll.appendChild(w);
+  });
 
-        const right = document.createElement('div');
-        right.style.flex = '1';
-        right.appendChild(card);
+  const addBtn = document.createElement('button');
+  addBtn.className = 'btn-add-stop';
+  addBtn.textContent = '+ 장소 추가';
+  addBtn.onclick = addStop;
+  scroll.appendChild(addBtn);
 
-        item.appendChild(left);
-        item.appendChild(right);
-        el.appendChild(item);
-      });
+  document.getElementById('stopCount').textContent = `${day.stops.length}개 장소`;
+  document.getElementById('totalCount').textContent = `${day.stops.length}개`;
 
-      const addBtn = document.createElement('button');
-      addBtn.className = 'add-stop-btn';
-      addBtn.innerHTML = '＋ 장소 추가';
-      addBtn.onclick = addStop;
-      el.appendChild(addBtn);
+  // 캐시 즉시 반영
+  day.stops.forEach((s, i) => {
+    if (i === day.stops.length-1) return;
+    const next = day.stops[i+1];
+    if (!s.lat || !next?.lat) return;
+    const key = `${s.lat},${s.lng}-${next.lat},${next.lng}`;
+    if (timeCache[key]) renderBadge(s.id, timeCache[key]);
+  });
+}
 
-      // Update summary
-      document.getElementById('placeCount').textContent = `${stops.length}개 장소`;
-      document.getElementById('footerStops').textContent = `장소 ${stops.length}곳`;
-      document.getElementById('footerMoves').textContent = `이동 ${Math.max(0, stops.length - 1)}회`;
-    }
+// ── CRUD ──
+let gTimer = null;
 
-    function highlightCard(id) {
-      document.querySelectorAll('.stop-card').forEach(c => c.classList.remove('highlighted'));
-      document.querySelectorAll('.step-dot').forEach(d => d.classList.remove('highlighted'));
-      const card = document.getElementById('card-' + id);
-      const dot = document.getElementById('dot-' + id);
-      if (card) { card.classList.add('highlighted'); card.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); }
-      if (dot) dot.classList.add('highlighted');
-    }
+function updateStop(id, key, val) {
+  const s = state.days[state.currentDayIdx].stops.find(s=>s.id===id);
+  if (!s) return;
+  s[key] = val; save(); renderTimeline(); renderMap();
+}
 
-    // ── CRUD ─────────────────────────────
-    function addStop() {
-      const stops = days[currentDay].stops;
-      const last = stops[stops.length - 1];
-      let time = '09:00';
-      if (last) {
-        const [h, m] = last.time.split(':').map(Number);
-        time = `${String(Math.min(h + 2, 23)).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
-      }
-      stops.push({ id: uid(), time, name: '', category: '관광', memo: '', transport: 'walk' });
-      save(); renderTimeline(); scheduleUpdate();
-    }
+function updateStopName(id, val) {
+  const s = state.days[state.currentDayIdx].stops.find(s=>s.id===id);
+  if (!s) return;
+  s.name = val; s.lat = null; s.lng = null; save();
+  clearTimeout(gTimer);
+  gTimer = setTimeout(async () => {
+    if (!val.trim()) return;
+    const c = await geocode(val);
+    if (c) { s.lat=c.lat; s.lng=c.lng; timeCache={}; save(); renderTimeline(); renderMap(); fetchAllTimes(); }
+  }, 900);
+}
 
-    function delStop(id) {
-      const stops = days[currentDay].stops;
-      const i = stops.findIndex(s => s.id === id);
-      if (i !== -1) stops.splice(i, 1);
-      save(); renderTimeline(); updateMap();
-    }
+function updateTransport(id, val, btn) {
+  const s = state.days[state.currentDayIdx].stops.find(s=>s.id===id);
+  if (!s) return;
+  s.transport = val; save();
+  btn.closest('.transport-btns').querySelectorAll('.transport-btn').forEach(b => {
+    b.classList.toggle('active-transport', b.textContent===val);
+  });
+}
 
-    function updateField(id, field, value) {
-      const stop = days[currentDay].stops.find(s => s.id === id);
-      if (stop) { stop[field] = value; save(); }
-    }
+function addStop() {
+  state.days[state.currentDayIdx].stops.push({ id:uid(), time:'12:00', name:'', cat:'관광', memo:'', transport:'대중교통', lat:null, lng:null });
+  save(); renderTimeline();
+}
 
-    function moveStop(id, dir) {
-      const stops = days[currentDay].stops;
-      const i = stops.findIndex(s => s.id === id);
-      const t = i + dir;
-      if (t < 0 || t >= stops.length) return;
-      [stops[i], stops[t]] = [stops[t], stops[i]];
-      save(); renderTimeline(); scheduleUpdate();
-    }
+function deleteStop(id) {
+  const day = state.days[state.currentDayIdx];
+  if (day.stops.length <= 1) { alert('최소 1개의 장소가 필요합니다.'); return; }
+  if (!confirm('이 장소를 삭제할까요?')) return;
+  day.stops = day.stops.filter(s=>s.id!==id);
+  timeCache={}; save(); renderTimeline(); renderMap(); fetchAllTimes();
+}
 
-    function scheduleUpdate() {
-      clearTimeout(geocodeTimer);
-      geocodeTimer = setTimeout(updateMap, 1200);
-    }
+// ── TABS & MODAL ──
+function renderTabs() {
+  const tabs = document.getElementById('dayTabs');
+  tabs.innerHTML = '';
+  state.days.forEach((day, i) => {
+    const btn = document.createElement('button');
+    btn.className = `day-tab ${i===state.currentDayIdx?'active':''}`;
+    btn.innerHTML = `Day ${i+1} <span class="day-date">${day.date}</span>`;
+    btn.onclick = () => { state.currentDayIdx=i; timeCache={}; renderTabs(); renderTimeline(); geocodeAll(); };
+    tabs.appendChild(btn);
+  });
+  const add = document.createElement('button');
+  add.className='btn-add-day'; add.textContent='+ 날짜 추가'; add.onclick=openModal;
+  tabs.appendChild(add);
+}
 
-    // ── EXPORT ───────────────────────────
-    function exportCSV() {
-      const rows = [['Day', '날짜', '시간', '장소명', '카테고리', '메모', '이동수단']];
-      days.forEach((d, i) => {
-        d.stops.forEach(s => {
-          rows.push([`Day ${i + 1}`, d.date, s.time, s.name, s.category, s.memo, TRANSPORT[s.transport] || '']);
-        });
-      });
-      const csv = rows.map(r => r.map(c => `"${c}"`).join(',')).join('\n');
-      const a = document.createElement('a');
-      a.href = URL.createObjectURL(new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8' }));
-      a.download = '여행일정.csv';
-      a.click();
-      toast('CSV 파일이 다운로드됐어요 ✅');
-    }
+function openModal() { document.getElementById('newDateInput').value=new Date().toISOString().slice(0,10); document.getElementById('dateModal').classList.add('show'); }
+function closeModal() { document.getElementById('dateModal').classList.remove('show'); }
+function confirmAddDay() {
+  const date = document.getElementById('newDateInput').value;
+  if (!date) return;
+  state.days.push({ date, stops:[{id:uid(),time:'09:00',name:'',cat:'관광',memo:'',transport:'대중교통',lat:null,lng:null}] });
+  state.currentDayIdx = state.days.length-1;
+  timeCache={}; save(); renderTabs(); renderTimeline(); closeModal();
+}
 
-    function toast(msg) {
-      const t = document.getElementById('toast');
-      t.textContent = msg;
-      t.classList.add('show');
-      setTimeout(() => t.classList.remove('show'), 2500);
-    }
+// ── CSV ──
+function exportCSV() {
+  const rows=[['Day','날짜','순서','시간','장소','카테고리','메모','이동수단']];
+  state.days.forEach((day,di)=>{
+    day.stops.forEach((s,si)=>{
+      rows.push([`Day${di+1}`,day.date,si+1,s.time,s.name,s.cat,s.memo,s.transport]);
+    });
+  });
+  const csv=rows.map(r=>r.map(v=>`"${(v||'').toString().replace(/"/g,'""')}"`).join(',')).join('\n');
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8;'}));
+  a.download='여행일정.csv'; a.click();
+}
 
-    window.addEventListener('load', init);
-  </script>
+window.addEventListener('load', init);
+</script>
 </body>
-
 </html>
