@@ -1,0 +1,1039 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>여행 플래너</title>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
+  <script type="text/javascript"
+    src="//dapi.kakao.com/v2/maps/sdk.js?appkey=3a651c6517e513f7e0819dd46ae3ee23&libraries=services"></script>
+  <style>
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    :root {
+      --kakao: #FEE500;
+      --kakao-dark: #F0D800;
+      --bg: #F7F7F8;
+      --surface: #FFFFFF;
+      --border: #E8E8EC;
+      --text-primary: #1A1A1A;
+      --text-secondary: #6B6B7B;
+      --text-muted: #A0A0B0;
+      --accent: #3B3B4F;
+      --radius: 12px;
+      --shadow: 0 2px 12px rgba(0, 0, 0, 0.07);
+      --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.12);
+    }
+
+    body {
+      font-family: 'Noto Sans KR', sans-serif;
+      background: var(--bg);
+      color: var(--text-primary);
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    /* Header */
+    header {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 0 24px;
+      height: 60px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-shrink: 0;
+      z-index: 100;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 700;
+      font-size: 16px;
+      color: var(--text-primary);
+    }
+
+    .logo-icon {
+      width: 36px;
+      height: 36px;
+      background: var(--kakao);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 16px;
+      border-radius: 8px;
+      border: none;
+      font-family: inherit;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .btn-outline {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--text-secondary);
+    }
+
+    .btn-outline:hover {
+      background: var(--bg);
+      color: var(--text-primary);
+    }
+
+    /* Day Tabs */
+    .day-tabs {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 0 24px;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      flex-shrink: 0;
+      height: 48px;
+      overflow-x: auto;
+    }
+
+    .day-tab {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 14px;
+      border-radius: 20px;
+      border: none;
+      background: transparent;
+      font-family: inherit;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text-secondary);
+      cursor: pointer;
+      transition: all 0.15s;
+      white-space: nowrap;
+    }
+
+    .day-tab:hover {
+      background: var(--bg);
+      color: var(--text-primary);
+    }
+
+    .day-tab.active {
+      background: var(--accent);
+      color: #fff;
+    }
+
+    .day-tab .date-label {
+      font-size: 11px;
+      opacity: 0.7;
+      font-weight: 400;
+    }
+
+    .tab-add-btn {
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      border: 1.5px dashed var(--border);
+      background: transparent;
+      color: var(--text-muted);
+      font-size: 18px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.15s;
+      margin-left: 4px;
+      flex-shrink: 0;
+    }
+
+    .tab-add-btn:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    /* Main Layout */
+    .main {
+      display: flex;
+      flex: 1;
+      overflow: hidden;
+    }
+
+    /* Timeline Panel */
+    .timeline-panel {
+      width: 420px;
+      flex-shrink: 0;
+      background: var(--bg);
+      display: flex;
+      flex-direction: column;
+      border-right: 1px solid var(--border);
+      overflow: hidden;
+    }
+
+    .timeline-header {
+      padding: 14px 20px 12px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+
+    .timeline-title {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    .place-count {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 2px 8px;
+      font-size: 11px;
+      color: var(--text-secondary);
+      font-weight: 400;
+    }
+
+    .timeline-scroll {
+      flex: 1;
+      overflow-y: auto;
+      padding: 16px 14px 80px;
+    }
+
+    .timeline-scroll::-webkit-scrollbar {
+      width: 4px;
+    }
+
+    .timeline-scroll::-webkit-scrollbar-thumb {
+      background: var(--border);
+      border-radius: 4px;
+    }
+
+    /* Timeline Item */
+    .timeline-item {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 4px;
+    }
+
+    .timeline-left {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      flex-shrink: 0;
+      padding-top: 6px;
+    }
+
+    .step-dot {
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      background: var(--kakao);
+      color: var(--text-primary);
+      font-size: 11px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      border: 2px solid white;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+      transition: all 0.2s;
+    }
+
+    .step-dot.highlighted {
+      background: var(--accent);
+      color: #fff;
+      transform: scale(1.1);
+    }
+
+    .connector {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2px;
+      padding: 4px 0;
+    }
+
+    .conn-line {
+      width: 2px;
+      height: 10px;
+      background: var(--border);
+    }
+
+    .conn-icon {
+      font-size: 13px;
+      opacity: 0.5;
+    }
+
+    /* Stop Card */
+    .stop-card {
+      flex: 1;
+      background: var(--surface);
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius);
+      padding: 12px 12px 10px;
+      box-shadow: var(--shadow);
+      transition: all 0.2s;
+      cursor: pointer;
+      margin-bottom: 4px;
+    }
+
+    .stop-card:hover {
+      box-shadow: var(--shadow-lg);
+    }
+
+    .stop-card.highlighted {
+      border-color: var(--kakao);
+      box-shadow: 0 0 0 2px rgba(254, 229, 0, 0.4);
+    }
+
+    .stop-top {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-bottom: 8px;
+    }
+
+    .stop-time {
+      border: none;
+      outline: none;
+      font-family: inherit;
+      font-size: 11px;
+      color: var(--text-muted);
+      background: transparent;
+      width: 54px;
+      font-weight: 500;
+      cursor: pointer;
+    }
+
+    .stop-name {
+      flex: 1;
+      border: none;
+      outline: none;
+      font-family: inherit;
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-primary);
+      background: transparent;
+    }
+
+    .stop-name::placeholder {
+      color: var(--text-muted);
+      font-weight: 400;
+    }
+
+    .card-actions {
+      display: flex;
+      gap: 2px;
+    }
+
+    .icon-btn {
+      width: 24px;
+      height: 24px;
+      border-radius: 6px;
+      border: none;
+      background: transparent;
+      color: var(--text-muted);
+      font-size: 12px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.15s;
+    }
+
+    .icon-btn:hover {
+      background: var(--bg);
+      color: var(--text-primary);
+    }
+
+    .icon-btn.del:hover {
+      background: #FFF0F0;
+      color: #E53E3E;
+    }
+
+    .stop-meta {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+
+    .cat-select {
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 3px 8px;
+      font-family: inherit;
+      font-size: 11px;
+      color: var(--text-secondary);
+      background: var(--bg);
+      outline: none;
+      cursor: pointer;
+    }
+
+    .memo-inp {
+      flex: 1;
+      border: none;
+      outline: none;
+      font-family: inherit;
+      font-size: 11px;
+      color: var(--text-secondary);
+      background: transparent;
+      min-width: 60px;
+    }
+
+    .memo-inp::placeholder {
+      color: var(--text-muted);
+    }
+
+    .transport-row {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-top: 8px;
+      padding-top: 8px;
+      border-top: 1px solid var(--bg);
+    }
+
+    .transport-label {
+      font-size: 10px;
+      color: var(--text-muted);
+      font-weight: 500;
+    }
+
+    .transport-btns {
+      display: flex;
+      gap: 3px;
+    }
+
+    .t-btn {
+      width: 28px;
+      height: 28px;
+      border-radius: 7px;
+      border: 1.5px solid var(--border);
+      background: var(--surface);
+      font-size: 13px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.15s;
+    }
+
+    .t-btn:hover {
+      border-color: var(--kakao);
+    }
+
+    .t-btn.active {
+      border-color: var(--accent);
+      background: var(--accent);
+    }
+
+    /* Add Stop */
+    .add-stop-btn {
+      width: 100%;
+      padding: 11px;
+      border: 1.5px dashed var(--border);
+      border-radius: var(--radius);
+      background: transparent;
+      color: var(--text-muted);
+      font-family: inherit;
+      font-size: 13px;
+      cursor: pointer;
+      transition: all 0.15s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      margin-top: 6px;
+    }
+
+    .add-stop-btn:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+      background: rgba(59, 59, 79, 0.03);
+    }
+
+    /* Footer */
+    .day-footer {
+      padding: 10px 20px;
+      background: var(--surface);
+      border-top: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      font-size: 12px;
+      color: var(--text-secondary);
+      flex-shrink: 0;
+    }
+
+    /* Map Panel */
+    .map-panel {
+      flex: 1;
+      position: relative;
+      overflow: hidden;
+    }
+
+    #kakao-map {
+      width: 100%;
+      height: 100%;
+    }
+
+    .geocode-status {
+      position: absolute;
+      top: 14px;
+      left: 14px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 8px 14px;
+      font-size: 12px;
+      color: var(--text-secondary);
+      box-shadow: var(--shadow);
+      z-index: 10;
+      display: none;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .geocode-status.show {
+      display: flex;
+    }
+
+    .spinner {
+      width: 13px;
+      height: 13px;
+      border: 2px solid var(--border);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    .map-controls {
+      position: absolute;
+      top: 14px;
+      right: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      z-index: 10;
+    }
+
+    .map-ctrl-btn {
+      width: 38px;
+      height: 38px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      font-size: 16px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: var(--shadow);
+      transition: all 0.15s;
+    }
+
+    .map-ctrl-btn:hover {
+      box-shadow: var(--shadow-lg);
+    }
+
+    .map-info {
+      position: absolute;
+      bottom: 14px;
+      left: 14px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 8px 14px;
+      font-size: 12px;
+      color: var(--text-secondary);
+      box-shadow: var(--shadow);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    /* Toast */
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%) translateY(80px);
+      background: var(--accent);
+      color: #fff;
+      padding: 10px 20px;
+      border-radius: 20px;
+      font-size: 13px;
+      font-weight: 500;
+      z-index: 9999;
+      transition: transform 0.3s ease;
+      pointer-events: none;
+    }
+
+    .toast.show {
+      transform: translateX(-50%) translateY(0);
+    }
+  </style>
+</head>
+
+<body>
+
+  <header>
+    <div class="logo">
+      <div class="logo-icon">🗺️</div>
+      <span>여행 플래너</span>
+    </div>
+    <div>
+      <button class="btn btn-outline" onclick="exportCSV()">⬇ CSV 내보내기</button>
+    </div>
+  </header>
+
+  <div class="day-tabs" id="dayTabs"></div>
+
+  <div class="main">
+    <div class="timeline-panel">
+      <div class="timeline-header">
+        <div class="timeline-title">
+          📋 일정 타임라인
+          <span class="place-count" id="placeCount">0개 장소</span>
+        </div>
+      </div>
+      <div class="timeline-scroll" id="timelineScroll"></div>
+      <div class="day-footer">
+        <span id="footerStops">장소 0곳</span>
+        <span id="footerMoves">이동 0회</span>
+      </div>
+    </div>
+
+    <div class="map-panel">
+      <div id="kakao-map"></div>
+      <div class="geocode-status" id="geocodeStatus">
+        <div class="spinner"></div>
+        <span>위치 검색 중...</span>
+      </div>
+      <div class="map-controls">
+        <button class="map-ctrl-btn" onclick="fitAll()" title="전체 보기">⊕</button>
+        <button class="map-ctrl-btn" onclick="toggleSatellite()" title="위성지도">🛰</button>
+      </div>
+      <div class="map-info">
+        📍 <strong id="mapStops">0</strong>개 장소 &nbsp;|&nbsp;
+        🔗 <strong id="mapRoutes">0</strong>개 구간
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script>
+    // ════════════════════════════════════
+    // ⚠️  여기에 카카오 REST API 키를 입력하세요
+    const KAKAO_REST_KEY = 'df3b8dcb49a5702a7d40fae940ad3e17';
+    // ════════════════════════════════════
+
+    let days = [];
+    let currentDay = 0;
+    let map = null;
+    let markers = [];
+    let polylines = [];
+    let overlays = [];
+    let isSatellite = false;
+    let geocodeTimer = null;
+
+    const TRANSPORT = { walk: '🚶', transit: '🚌', car: '🚗' };
+    const CATS = ['관광', '식사', '숙소', '이동', '쇼핑', '기타'];
+
+    function uid() { return Math.random().toString(36).slice(2, 9); }
+
+    function save() { localStorage.setItem('tp-v3', JSON.stringify(days)); }
+
+    function init() {
+      const raw = localStorage.getItem('tp-v3');
+      if (raw) {
+        days = JSON.parse(raw);
+      } else {
+        days = [{
+          id: uid(), date: '2026-04-01',
+          stops: [
+            { id: uid(), time: '09:00', name: '경복궁', category: '관광', memo: '한복 입고 입장하기', transport: 'walk' },
+            { id: uid(), time: '12:00', name: '광장시장', category: '식사', memo: '빈대떡, 마약김밥', transport: 'transit' },
+            { id: uid(), time: '14:30', name: '북촌한옥마을', category: '관광', memo: '', transport: 'walk' },
+          ]
+        }];
+      }
+      initMap();
+      renderTabs();
+      renderTimeline();
+    }
+
+    // ── MAP ──────────────────────────────
+    function initMap() {
+      map = new kakao.maps.Map(document.getElementById('kakao-map'), {
+        center: new kakao.maps.LatLng(37.5665, 126.9780),
+        level: 7
+      });
+      updateMap();
+    }
+
+    function clearMap() {
+      markers.forEach(m => m.setMap(null));
+      polylines.forEach(p => p.setMap(null));
+      overlays.forEach(o => o.setMap(null));
+      markers = []; polylines = []; overlays = [];
+    }
+
+    async function updateMap() {
+      clearMap();
+      const stops = days[currentDay]?.stops.filter(s => s.name.trim()) || [];
+      if (!stops.length) { updateMapInfo(0, 0); return; }
+
+      showStatus(true);
+      const coords = await Promise.all(stops.map(s => geocode(s.name)));
+      showStatus(false);
+
+      const pts = [];
+      coords.forEach((c, i) => {
+        if (!c) return;
+        const pos = new kakao.maps.LatLng(c.lat, c.lng);
+        pts.push({ pos, stop: stops[i], idx: i });
+      });
+
+      pts.forEach(({ pos, stop, idx }) => {
+        // Marker
+        const isFirst = idx === 0;
+        const el = document.createElement('div');
+        el.style.cssText = `
+      width:28px;height:28px;border-radius:50%;
+      background:${isFirst ? '#FEE500' : '#3B3B4F'};
+      color:${isFirst ? '#1A1A1A' : '#fff'};
+      font-size:11px;font-weight:700;
+      display:flex;align-items:center;justify-content:center;
+      border:3px solid white;
+      box-shadow:0 2px 8px rgba(0,0,0,0.25);
+      cursor:pointer;
+      font-family:'Noto Sans KR',sans-serif;
+      transition:transform 0.15s;
+    `;
+        el.textContent = idx + 1;
+
+        const marker = new kakao.maps.CustomOverlay({ position: pos, content: el, yAnchor: 0.5 });
+        marker.setMap(map);
+        markers.push(marker);
+
+        // Info popup
+        const popup = document.createElement('div');
+        popup.style.cssText = `
+      background:white;padding:8px 12px;border-radius:10px;
+      box-shadow:0 4px 20px rgba(0,0,0,0.15);
+      font-family:'Noto Sans KR',sans-serif;font-size:12px;
+      min-width:130px;border:1px solid #E8E8EC;
+      white-space:nowrap;
+    `;
+        popup.innerHTML = `
+      <div style="font-weight:600;margin-bottom:2px;">${stop.name}</div>
+      <div style="color:#6B6B7B;">${stop.time} · ${stop.category}</div>
+      ${stop.memo ? `<div style="color:#A0A0B0;margin-top:2px;font-size:11px;">${stop.memo}</div>` : ''}
+    `;
+
+        const infoOverlay = new kakao.maps.CustomOverlay({ position: pos, content: popup, yAnchor: 2.3 });
+        overlays.push(infoOverlay);
+
+        let open = false;
+        el.addEventListener('click', () => {
+          open = !open;
+          infoOverlay.setMap(open ? map : null);
+          highlightCard(stop.id);
+        });
+
+        el.addEventListener('mouseenter', () => { el.style.transform = 'scale(1.15)'; });
+        el.addEventListener('mouseleave', () => { el.style.transform = 'scale(1)'; });
+      });
+
+      // Polyline
+      if (pts.length > 1) {
+        const line = new kakao.maps.Polyline({
+          path: pts.map(p => p.pos),
+          strokeWeight: 2.5,
+          strokeColor: '#3B3B4F',
+          strokeOpacity: 0.5,
+          strokeStyle: 'shortdash',
+        });
+        line.setMap(map);
+        polylines.push(line);
+      }
+
+      updateMapInfo(pts.length, Math.max(0, pts.length - 1));
+      if (pts.length) {
+        const bounds = new kakao.maps.LatLngBounds();
+        pts.forEach(p => bounds.extend(p.pos));
+        map.setBounds(bounds);
+      }
+    }
+
+    async function geocode(name) {
+      try {
+        const res = await fetch(
+          `https://dapi.kakao.com/v2/local/search/keyword.json?query=${encodeURIComponent(name)}&size=1`,
+          { headers: { Authorization: `KakaoAK ${KAKAO_REST_KEY}` } }
+        );
+        const data = await res.json();
+        if (data.documents?.length) {
+          return { lat: parseFloat(data.documents[0].y), lng: parseFloat(data.documents[0].x) };
+        }
+      } catch (e) { }
+      return null;
+    }
+
+    function fitAll() {
+      if (!markers.length) return;
+      const bounds = new kakao.maps.LatLngBounds();
+      markers.forEach(m => bounds.extend(m.getPosition()));
+      map.setBounds(bounds);
+    }
+
+    function toggleSatellite() {
+      isSatellite = !isSatellite;
+      map.setMapTypeId(isSatellite ? kakao.maps.MapTypeId.HYBRID : kakao.maps.MapTypeId.ROADMAP);
+    }
+
+    function showStatus(v) {
+      document.getElementById('geocodeStatus').className = 'geocode-status' + (v ? ' show' : '');
+    }
+
+    function updateMapInfo(s, r) {
+      document.getElementById('mapStops').textContent = s;
+      document.getElementById('mapRoutes').textContent = r;
+    }
+
+    // ── TABS ─────────────────────────────
+    function renderTabs() {
+      const el = document.getElementById('dayTabs');
+      el.innerHTML = '';
+      days.forEach((d, i) => {
+        const btn = document.createElement('button');
+        btn.className = 'day-tab' + (i === currentDay ? ' active' : '');
+        btn.innerHTML = `Day ${i + 1} <span class="date-label">${d.date}</span>`;
+        btn.onclick = () => switchDay(i);
+        el.appendChild(btn);
+      });
+      const add = document.createElement('button');
+      add.className = 'tab-add-btn';
+      add.textContent = '+';
+      add.title = '날짜 추가';
+      add.onclick = addDay;
+      el.appendChild(add);
+    }
+
+    function switchDay(i) {
+      currentDay = i;
+      renderTabs();
+      renderTimeline();
+      updateMap();
+    }
+
+    function addDay() {
+      const last = days[days.length - 1];
+      const d = new Date(last ? last.date : new Date().toISOString().slice(0, 10));
+      d.setDate(d.getDate() + 1);
+      days.push({ id: uid(), date: d.toISOString().slice(0, 10), stops: [] });
+      save();
+      switchDay(days.length - 1);
+    }
+
+    // ── TIMELINE ─────────────────────────
+    function renderTimeline() {
+      const stops = days[currentDay]?.stops || [];
+      const el = document.getElementById('timelineScroll');
+      el.innerHTML = '';
+
+      stops.forEach((stop, i) => {
+        const isLast = i === stops.length - 1;
+
+        const item = document.createElement('div');
+        item.className = 'timeline-item';
+
+        // Left column
+        const left = document.createElement('div');
+        left.className = 'timeline-left';
+
+        const dot = document.createElement('div');
+        dot.className = 'step-dot';
+        dot.id = `dot-${stop.id}`;
+        dot.textContent = i + 1;
+        left.appendChild(dot);
+
+        if (!isLast) {
+          const conn = document.createElement('div');
+          conn.className = 'connector';
+          conn.innerHTML = `
+        <div class="conn-line"></div>
+        <div class="conn-icon">${TRANSPORT[stop.transport] || '🚶'}</div>
+        <div class="conn-line"></div>
+      `;
+          left.appendChild(conn);
+        }
+
+        // Card
+        const card = document.createElement('div');
+        card.className = 'stop-card';
+        card.id = `card-${stop.id}`;
+        card.onclick = () => highlightCard(stop.id);
+
+        card.innerHTML = `
+      <div class="stop-top">
+        <input class="stop-time" type="time" value="${stop.time}"
+          onchange="updateField('${stop.id}', 'time', this.value)">
+        <input class="stop-name" type="text" value="${stop.name}"
+          placeholder="장소명 입력..."
+          onchange="updateField('${stop.id}', 'name', this.value)"
+          oninput="scheduleUpdate()">
+        <div class="card-actions">
+          <button class="icon-btn" onclick="moveStop('${stop.id}',-1);event.stopPropagation();" title="위로">↑</button>
+          <button class="icon-btn" onclick="moveStop('${stop.id}',1);event.stopPropagation();" title="아래로">↓</button>
+          <button class="icon-btn del" onclick="delStop('${stop.id}');event.stopPropagation();" title="삭제">✕</button>
+        </div>
+      </div>
+      <div class="stop-meta">
+        <select class="cat-select" onchange="updateField('${stop.id}','category',this.value)">
+          ${CATS.map(c => `<option ${c === stop.category ? 'selected' : ''}>${c}</option>`).join('')}
+        </select>
+        <input class="memo-inp" type="text" value="${stop.memo}" placeholder="메모..."
+          onchange="updateField('${stop.id}','memo',this.value)">
+      </div>
+      ${!isLast ? `
+      <div class="transport-row">
+        <span class="transport-label">다음 장소까지</span>
+        <div class="transport-btns">
+          <button class="t-btn ${stop.transport === 'walk' ? 'active' : ''}"
+            onclick="updateField('${stop.id}','transport','walk');renderTimeline();event.stopPropagation();" title="도보">🚶</button>
+          <button class="t-btn ${stop.transport === 'transit' ? 'active' : ''}"
+            onclick="updateField('${stop.id}','transport','transit');renderTimeline();event.stopPropagation();" title="대중교통">🚌</button>
+          <button class="t-btn ${stop.transport === 'car' ? 'active' : ''}"
+            onclick="updateField('${stop.id}','transport','car');renderTimeline();event.stopPropagation();" title="자동차">🚗</button>
+        </div>
+      </div>` : ''}
+    `;
+
+        const right = document.createElement('div');
+        right.style.flex = '1';
+        right.appendChild(card);
+
+        item.appendChild(left);
+        item.appendChild(right);
+        el.appendChild(item);
+      });
+
+      const addBtn = document.createElement('button');
+      addBtn.className = 'add-stop-btn';
+      addBtn.innerHTML = '＋ 장소 추가';
+      addBtn.onclick = addStop;
+      el.appendChild(addBtn);
+
+      // Update summary
+      document.getElementById('placeCount').textContent = `${stops.length}개 장소`;
+      document.getElementById('footerStops').textContent = `장소 ${stops.length}곳`;
+      document.getElementById('footerMoves').textContent = `이동 ${Math.max(0, stops.length - 1)}회`;
+    }
+
+    function highlightCard(id) {
+      document.querySelectorAll('.stop-card').forEach(c => c.classList.remove('highlighted'));
+      document.querySelectorAll('.step-dot').forEach(d => d.classList.remove('highlighted'));
+      const card = document.getElementById('card-' + id);
+      const dot = document.getElementById('dot-' + id);
+      if (card) { card.classList.add('highlighted'); card.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); }
+      if (dot) dot.classList.add('highlighted');
+    }
+
+    // ── CRUD ─────────────────────────────
+    function addStop() {
+      const stops = days[currentDay].stops;
+      const last = stops[stops.length - 1];
+      let time = '09:00';
+      if (last) {
+        const [h, m] = last.time.split(':').map(Number);
+        time = `${String(Math.min(h + 2, 23)).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
+      }
+      stops.push({ id: uid(), time, name: '', category: '관광', memo: '', transport: 'walk' });
+      save(); renderTimeline(); scheduleUpdate();
+    }
+
+    function delStop(id) {
+      const stops = days[currentDay].stops;
+      const i = stops.findIndex(s => s.id === id);
+      if (i !== -1) stops.splice(i, 1);
+      save(); renderTimeline(); updateMap();
+    }
+
+    function updateField(id, field, value) {
+      const stop = days[currentDay].stops.find(s => s.id === id);
+      if (stop) { stop[field] = value; save(); }
+    }
+
+    function moveStop(id, dir) {
+      const stops = days[currentDay].stops;
+      const i = stops.findIndex(s => s.id === id);
+      const t = i + dir;
+      if (t < 0 || t >= stops.length) return;
+      [stops[i], stops[t]] = [stops[t], stops[i]];
+      save(); renderTimeline(); scheduleUpdate();
+    }
+
+    function scheduleUpdate() {
+      clearTimeout(geocodeTimer);
+      geocodeTimer = setTimeout(updateMap, 1200);
+    }
+
+    // ── EXPORT ───────────────────────────
+    function exportCSV() {
+      const rows = [['Day', '날짜', '시간', '장소명', '카테고리', '메모', '이동수단']];
+      days.forEach((d, i) => {
+        d.stops.forEach(s => {
+          rows.push([`Day ${i + 1}`, d.date, s.time, s.name, s.category, s.memo, TRANSPORT[s.transport] || '']);
+        });
+      });
+      const csv = rows.map(r => r.map(c => `"${c}"`).join(',')).join('\n');
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8' }));
+      a.download = '여행일정.csv';
+      a.click();
+      toast('CSV 파일이 다운로드됐어요 ✅');
+    }
+
+    function toast(msg) {
+      const t = document.getElementById('toast');
+      t.textContent = msg;
+      t.classList.add('show');
+      setTimeout(() => t.classList.remove('show'), 2500);
+    }
+
+    window.addEventListener('load', init);
+  </script>
+</body>
+
+</html>
