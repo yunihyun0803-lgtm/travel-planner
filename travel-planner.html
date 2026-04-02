@@ -36,7 +36,7 @@
 
   .main { display: flex; flex: 1; overflow: hidden; }
 
-  .timeline-panel { width: 440px; flex-shrink: 0; display: flex; flex-direction: column; background: var(--bg); border-right: 1px solid var(--border); overflow: hidden; }
+  .timeline-panel { width: 460px; flex-shrink: 0; display: flex; flex-direction: column; background: var(--bg); border-right: 1px solid var(--border); overflow: hidden; }
   .timeline-header { padding: 16px 20px 12px; display: flex; align-items: center; gap: 8px; flex-shrink: 0; font-size: 14px; font-weight: 700; }
   .stop-count { background: var(--yellow); padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 500; }
   .timeline-scroll { flex: 1; overflow-y: auto; padding: 0 16px 16px; }
@@ -66,13 +66,15 @@
   .memo-input { flex: 1; border: none; background: transparent; font-family: inherit; font-size: 12px; color: var(--text-sub); outline: none; min-width: 0; }
   .memo-input::placeholder { color: var(--text-muted); }
 
+  /* 이동수단 + 소요시간 */
   .transport-row { margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--bg); }
   .transport-btns { display: flex; align-items: center; gap: 6px; margin-bottom: 8px; flex-wrap: wrap; }
   .transport-label { font-size: 11px; color: var(--text-muted); }
   .transport-btn { padding: 3px 10px; border-radius: 20px; border: 1px solid var(--border); background: transparent; font-family: inherit; font-size: 11px; cursor: pointer; color: var(--text-sub); transition: all 0.15s; }
   .transport-btn.active-transport { background: var(--text); color: var(--white); border-color: var(--text); }
 
-  .travel-time-display { display: flex; gap: 6px; flex-wrap: wrap; min-height: 24px; }
+  /* 소요시간 뱃지 */
+  .time-summary { display: flex; align-items: center; gap: 6px; margin-bottom: 6px; }
   .time-badge { display: inline-flex; align-items: center; gap: 4px; padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 500; }
   .time-badge.walk    { background: #EDFAF3; color: #52C788; }
   .time-badge.car     { background: #EBF4FF; color: #4A90D9; }
@@ -80,6 +82,19 @@
   .time-badge.loading { background: var(--bg); color: var(--text-muted); animation: pulse 1.2s infinite; }
   .time-badge.error   { background: var(--bg); color: var(--text-muted); }
   @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+
+  /* 대중교통 상세 경로 */
+  .transit-detail { margin-top: 6px; border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
+  .transit-step { display: flex; align-items: flex-start; gap: 8px; padding: 7px 10px; font-size: 11px; border-bottom: 1px solid var(--bg); }
+  .transit-step:last-child { border-bottom: none; }
+  .transit-step-icon { width: 22px; height: 22px; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 11px; flex-shrink: 0; margin-top: 1px; }
+  .icon-walk  { background: #EDFAF3; }
+  .icon-bus   { background: #FEF0EE; }
+  .icon-sub   { background: #EBF4FF; }
+  .transit-step-info { flex: 1; line-height: 1.5; }
+  .transit-step-name { font-weight: 600; color: var(--text); }
+  .transit-step-desc { color: var(--text-sub); font-size: 10px; }
+  .transit-step-time { font-size: 10px; color: var(--text-muted); white-space: nowrap; }
 
   .btn-add-stop { width: 100%; padding: 12px; border: 1px dashed var(--border); border-radius: var(--radius); background: transparent; font-family: inherit; font-size: 13px; color: var(--text-muted); cursor: pointer; transition: all 0.15s; margin-top: 4px; }
   .btn-add-stop:hover { border-color: var(--yellow); color: var(--text); background: #FFFDE7; }
@@ -140,46 +155,40 @@
   </div>
 </div>
 
-<!-- 카카오 지도 SDK: 키 교체 후 주석 해제하세요 -->
-<!-- <script src="//dapi.kakao.com/v2/maps/sdk.js?appkey=3a651c6517e513f7e0819dd46ae3ee23&libraries=services"></script> -->
-
 <script>
 // ══════════════════════════════════════════
-//  🔑 키 설정 (여기에 본인 키를 입력하세요)
+//  🔑 키 설정
 // ══════════════════════════════════════════
 const KAKAO_REST_KEY = 'df3b8dcb49a5702a7d40fae940ad3e17';
 const ODSAY_KEY      = 'V1hY1ycdWsswHGFswy3HJQ';
-const KAKAO_JS_KEY   = '3a651c6517e513f7e0819dd46ae3ee23'; // 지도 SDK용
+const KAKAO_JS_KEY   = '3a651c6517e513f7e0819dd46ae3ee23';
 
 // ══════════════════════════════════════════
 //  STATE
 // ══════════════════════════════════════════
 let state = { days: [], currentDayIdx: 0 };
-let timeCache = {};
-let map = null, markers = [], polylines = [];
+let timeCache = {};         // 소요시간 캐시
+let routeCache = {};        // 도로 경로 좌표 캐시
+let map = null;
+let routePolylines = [];    // 현재 지도에 그려진 경로선
+let markerOverlays = [];    // 마커
 
 function uid() { return Math.random().toString(36).slice(2,9); }
-function save() {
-  try { localStorage.setItem('tp-v4', JSON.stringify(state)); } catch(e) {}
-}
-function load() {
-  try {
-    const s = localStorage.getItem('tp-v4');
-    return s ? JSON.parse(s) : null;
-  } catch(e) { return null; }
-}
+function save() { try { localStorage.setItem('tp-v5', JSON.stringify(state)); } catch(e) {} }
+function load() { try { const s = localStorage.getItem('tp-v5'); return s ? JSON.parse(s) : null; } catch(e) { return null; } }
+function escHtml(s) { return String(s||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 
 // ══════════════════════════════════════════
 //  KAKAO SDK 동적 로드
 // ══════════════════════════════════════════
 function loadKakaoSDK() {
-  return new Promise((resolve) => {
+  return new Promise(resolve => {
     if (window.kakao && window.kakao.maps) { resolve(); return; }
-    const script = document.createElement('script');
-    script.src = `//dapi.kakao.com/v2/maps/sdk.js?appkey=${KAKAO_JS_KEY}&libraries=services&autoload=false`;
-    script.onload = () => { kakao.maps.load(resolve); };
-    script.onerror = () => { console.warn('카카오 지도 SDK 로드 실패'); resolve(); };
-    document.head.appendChild(script);
+    const s = document.createElement('script');
+    s.src = `//dapi.kakao.com/v2/maps/sdk.js?appkey=${KAKAO_JS_KEY}&libraries=services&autoload=false`;
+    s.onload = () => kakao.maps.load(resolve);
+    s.onerror = () => resolve();
+    document.head.appendChild(s);
   });
 }
 
@@ -194,18 +203,14 @@ async function init() {
     const today = new Date().toISOString().slice(0,10);
     state = {
       currentDayIdx: 0,
-      days: [{
-        date: today,
-        stops: [
-          { id:uid(), time:'09:00', name:'경복궁',       cat:'관광', memo:'한복 입고 입장하기', transport:'대중교통', lat:null, lng:null },
-          { id:uid(), time:'12:00', name:'광장시장',     cat:'식사', memo:'육회비빔밥 먹기',    transport:'도보',     lat:null, lng:null },
-          { id:uid(), time:'14:00', name:'북촌한옥마을', cat:'관광', memo:'사진 스팟 탐방',    transport:'자동차',   lat:null, lng:null },
-        ]
-      }]
+      days: [{ date: today, stops: [
+        { id:uid(), time:'09:00', name:'경복궁',       cat:'관광', memo:'한복 입고 입장하기', transport:'대중교통', lat:null, lng:null },
+        { id:uid(), time:'12:00', name:'광장시장',     cat:'식사', memo:'육회비빔밥 먹기',    transport:'도보',     lat:null, lng:null },
+        { id:uid(), time:'14:00', name:'북촌한옥마을', cat:'관광', memo:'사진 스팟 탐방',    transport:'자동차',   lat:null, lng:null },
+      ]}]
     };
     save();
   }
-
   await loadKakaoSDK();
   initMap();
   renderTabs();
@@ -220,10 +225,9 @@ function initMap() {
   if (!window.kakao || !kakao.maps) return;
   try {
     map = new kakao.maps.Map(document.getElementById('kakaoMap'), {
-      center: new kakao.maps.LatLng(37.5665, 126.9780),
-      level: 7
+      center: new kakao.maps.LatLng(37.5665, 126.9780), level: 7
     });
-  } catch(e) { console.warn('지도 초기화 실패:', e); }
+  } catch(e) {}
 }
 
 async function geocodeAll() {
@@ -236,8 +240,8 @@ async function geocodeAll() {
     }
   }
   save();
-  renderMap();
-  renderTimeline(); // dot 활성화 반영
+  await drawAllRoutes();
+  renderTimeline();
   fetchAllTimes();
 }
 
@@ -249,25 +253,29 @@ async function geocode(name) {
       { headers: { Authorization: `KakaoAK ${KAKAO_REST_KEY}` } }
     );
     const d = await r.json();
-    if (d.documents && d.documents.length > 0) {
-      return { lat: parseFloat(d.documents[0].y), lng: parseFloat(d.documents[0].x) };
-    }
+    if (d.documents?.length) return { lat: parseFloat(d.documents[0].y), lng: parseFloat(d.documents[0].x) };
   } catch(e) {}
   return null;
 }
 
-function renderMap() {
+// ── 마커 + 경로선 전체 렌더 ──
+async function drawAllRoutes() {
   if (!map) return;
-  markers.forEach(m => { try { m.setMap(null); } catch(e) {} });
-  polylines.forEach(p => { try { p.setMap(null); } catch(e) {} });
-  markers = []; polylines = [];
+
+  // 기존 제거
+  routePolylines.forEach(p => { try { p.setMap(null); } catch(e) {} });
+  markerOverlays.forEach(m => { try { m.setMap(null); } catch(e) {} });
+  routePolylines = []; markerOverlays = [];
 
   const day = state.days[state.currentDayIdx];
   if (!day) return;
+
   const valid = day.stops.filter(s => s.lat && s.lng);
   if (!valid.length) return;
 
   const bounds = new kakao.maps.LatLngBounds();
+
+  // 마커 찍기
   valid.forEach((s, i) => {
     const pos = new kakao.maps.LatLng(s.lat, s.lng);
     bounds.extend(pos);
@@ -277,18 +285,76 @@ function renderMap() {
     div.onclick = () => highlightCard(s.id);
     const ov = new kakao.maps.CustomOverlay({ position: pos, content: div, yAnchor: 0.5 });
     ov.setMap(map);
-    markers.push(ov);
+    markerOverlays.push(ov);
   });
 
-  if (valid.length > 1) {
-    const poly = new kakao.maps.Polyline({
-      path: valid.map(s => new kakao.maps.LatLng(s.lat, s.lng)),
-      strokeWeight: 2, strokeColor: '#FEE500', strokeOpacity: 0.9
-    });
-    poly.setMap(map);
-    polylines.push(poly);
+  // 구간별 실제 경로 그리기
+  for (let i = 0; i < day.stops.length - 1; i++) {
+    const a = day.stops[i], b = day.stops[i+1];
+    if (!a.lat || !b.lat) continue;
+    await drawSegmentRoute(a, b);
   }
+
   map.setBounds(bounds);
+}
+
+// 구간별 경로 그리기 (이동수단에 따라 색상/스타일 다르게)
+async function drawSegmentRoute(a, b) {
+  const key = `route_${a.lat},${a.lng}|${b.lat},${b.lng}|${a.transport}`;
+
+  let coords = routeCache[key];
+  if (!coords) {
+    if (a.transport === '자동차') {
+      coords = await fetchCarRoute(a, b);
+    } else if (a.transport === '도보') {
+      coords = straightLineCoords(a, b); // 도보는 직선 (카카오 도보 경로 미제공)
+    } else {
+      // 대중교통도 직선으로 (ODsay는 좌표 경로 미제공)
+      coords = straightLineCoords(a, b);
+    }
+    routeCache[key] = coords || [];
+  }
+
+  if (!coords || !coords.length) return;
+
+  const colorMap = { '자동차': '#4A90D9', '도보': '#52C788', '대중교통': '#E85D4A' };
+  const styleMap = { '자동차': 'solid', '도보': 'shortdot', '대중교통': 'dash' };
+
+  const poly = new kakao.maps.Polyline({
+    path: coords.map(c => new kakao.maps.LatLng(c[0], c[1])),
+    strokeWeight: 4,
+    strokeColor: colorMap[a.transport] || '#FEE500',
+    strokeOpacity: 0.85,
+    strokeStyle: styleMap[a.transport] || 'solid'
+  });
+  poly.setMap(map);
+  routePolylines.push(poly);
+}
+
+// 카카오 자동차 경로 좌표 가져오기
+async function fetchCarRoute(a, b) {
+  try {
+    const r = await fetch(
+      `https://apis-navi.kakaomobility.com/v1/directions?origin=${a.lng},${a.lat}&destination=${b.lng},${b.lat}&priority=RECOMMEND`,
+      { headers: { Authorization: `KakaoAK ${KAKAO_REST_KEY}` } }
+    );
+    const d = await r.json();
+    const sections = d.routes?.[0]?.sections;
+    if (!sections) return null;
+    const coords = [];
+    sections.forEach(sec => {
+      sec.roads?.forEach(road => {
+        for (let i = 0; i < road.vertexes.length; i += 2) {
+          coords.push([road.vertexes[i+1], road.vertexes[i]]); // [lat, lng]
+        }
+      });
+    });
+    return coords.length ? coords : null;
+  } catch(e) { return null; }
+}
+
+function straightLineCoords(a, b) {
+  return [[a.lat, a.lng], [b.lat, b.lng]];
 }
 
 function highlightCard(id) {
@@ -298,7 +364,7 @@ function highlightCard(id) {
 }
 
 // ══════════════════════════════════════════
-//  소요시간
+//  소요시간 (선택한 이동수단만)
 // ══════════════════════════════════════════
 async function fetchAllTimes() {
   const day = state.days[state.currentDayIdx];
@@ -306,14 +372,22 @@ async function fetchAllTimes() {
   for (let i = 0; i < day.stops.length - 1; i++) {
     const a = day.stops[i], b = day.stops[i+1];
     if (!a.lat || !b.lat) continue;
-    const key = `${a.lat},${a.lng}|${b.lat},${b.lng}`;
-    if (timeCache[key]) { renderBadge(a.id, timeCache[key]); continue; }
-    renderBadge(a.id, null, true);
-    const [car, walk, bus] = await Promise.all([
-      fetchCarTime(a, b), fetchWalkTime(a, b), fetchBusTime(a, b)
-    ]);
-    timeCache[key] = { car, walk, bus };
-    renderBadge(a.id, timeCache[key]);
+    const key = `time_${a.lat},${a.lng}|${b.lat},${b.lng}|${a.transport}`;
+    if (timeCache[key]) { renderTimeInfo(a.id, a.transport, timeCache[key]); continue; }
+    renderTimeLoading(a.id);
+    const result = await fetchTimeByTransport(a, b, a.transport);
+    timeCache[key] = result;
+    renderTimeInfo(a.id, a.transport, result);
+  }
+}
+
+async function fetchTimeByTransport(a, b, transport) {
+  if (transport === '자동차') {
+    return await fetchCarTime(a, b);
+  } else if (transport === '도보') {
+    return fetchWalkTime(a, b);
+  } else {
+    return await fetchTransitDetail(a, b);
   }
 }
 
@@ -325,42 +399,121 @@ async function fetchCarTime(a, b) {
     );
     const d = await r.json();
     const sec = d.routes?.[0]?.summary?.duration;
-    return sec != null ? Math.round(sec / 60) : null;
+    return sec != null ? { type: 'car', minutes: Math.round(sec/60) } : null;
   } catch(e) { return null; }
 }
 
 function fetchWalkTime(a, b) {
-  // 카카오 도보 API 미제공 → 직선거리 기반 추정 (4km/h)
-  try {
-    const R = 6371000;
-    const dLat = (b.lat - a.lat) * Math.PI / 180;
-    const dLng = (b.lng - a.lng) * Math.PI / 180;
-    const x = Math.sin(dLat/2)**2 + Math.cos(a.lat*Math.PI/180) * Math.cos(b.lat*Math.PI/180) * Math.sin(dLng/2)**2;
-    const dist = R * 2 * Math.atan2(Math.sqrt(x), Math.sqrt(1-x));
-    return Promise.resolve(Math.round(dist / 67));
-  } catch(e) { return Promise.resolve(null); }
+  const R = 6371000;
+  const dLat = (b.lat - a.lat) * Math.PI/180;
+  const dLng = (b.lng - a.lng) * Math.PI/180;
+  const x = Math.sin(dLat/2)**2 + Math.cos(a.lat*Math.PI/180)*Math.cos(b.lat*Math.PI/180)*Math.sin(dLng/2)**2;
+  const dist = R * 2 * Math.atan2(Math.sqrt(x), Math.sqrt(1-x));
+  return { type: 'walk', minutes: Math.round(dist/67) };
 }
 
-async function fetchBusTime(a, b) {
+async function fetchTransitDetail(a, b) {
   try {
     const url = `https://api.odsay.com/v1/api/searchPubTransPathT?SX=${a.lng}&SY=${a.lat}&EX=${b.lng}&EY=${b.lat}&apiKey=${encodeURIComponent(ODSAY_KEY)}`;
     const r = await fetch(url);
     const d = await r.json();
-    return d.result?.path?.[0]?.info?.totalTime ?? null;
+    const path = d.result?.path?.[0];
+    if (!path) return null;
+
+    const totalTime = path.info.totalTime;
+    const steps = [];
+
+    path.subPath?.forEach(sub => {
+      if (sub.trafficType === 1) {
+        // 지하철
+        steps.push({
+          type: 'subway',
+          icon: '🚇',
+          name: sub.lane?.[0]?.name || '지하철',
+          from: sub.startName,
+          to: sub.endName,
+          time: sub.sectionTime,
+          stationCount: sub.stationCount
+        });
+      } else if (sub.trafficType === 2) {
+        // 버스
+        const busNums = sub.lane?.map(l => l.busNo).filter(Boolean).join(', ') || '';
+        steps.push({
+          type: 'bus',
+          icon: '🚌',
+          name: `버스 ${busNums}`,
+          from: sub.startName,
+          to: sub.endName,
+          time: sub.sectionTime,
+          stationCount: sub.stationCount
+        });
+      } else if (sub.trafficType === 3) {
+        // 도보
+        if (sub.sectionTime > 0) {
+          steps.push({
+            type: 'walk',
+            icon: '🚶',
+            name: '도보',
+            from: '',
+            to: '',
+            time: sub.sectionTime,
+            distance: sub.distance
+          });
+        }
+      }
+    });
+
+    return { type: 'transit', totalTime, steps };
   } catch(e) { return null; }
 }
 
-function renderBadge(stopId, times, loading = false) {
-  const el = document.querySelector(`.stop-card[data-id="${stopId}"] .travel-time-display`);
+// ── 소요시간 렌더 ──
+function renderTimeLoading(stopId) {
+  const el = document.querySelector(`.stop-card[data-id="${stopId}"] .time-info-area`);
   if (!el) return;
-  if (loading) { el.innerHTML = `<span class="time-badge loading">⏳ 계산 중...</span>`; return; }
-  if (!times) return;
-  let html = '';
-  if (times.walk != null) html += `<span class="time-badge walk">🚶 ${times.walk}분</span>`;
-  if (times.car  != null) html += `<span class="time-badge car">🚗 ${times.car}분</span>`;
-  if (times.bus  != null) html += `<span class="time-badge bus">🚌 ${times.bus}분</span>`;
-  if (!html) html = `<span class="time-badge error">경로 정보 없음</span>`;
-  el.innerHTML = html;
+  el.innerHTML = `<span class="time-badge loading">⏳ 계산 중...</span>`;
+}
+
+function renderTimeInfo(stopId, transport, result) {
+  const el = document.querySelector(`.stop-card[data-id="${stopId}"] .time-info-area`);
+  if (!el) return;
+
+  if (!result) {
+    el.innerHTML = `<span class="time-badge error">경로 정보 없음</span>`;
+    return;
+  }
+
+  if (result.type === 'car') {
+    el.innerHTML = `<div class="time-summary"><span class="time-badge car">🚗 약 ${result.minutes}분</span></div>`;
+  } else if (result.type === 'walk') {
+    el.innerHTML = `<div class="time-summary"><span class="time-badge walk">🚶 약 ${result.minutes}분</span></div>`;
+  } else if (result.type === 'transit') {
+    let html = `<div class="time-summary"><span class="time-badge bus">🚌 총 ${result.totalTime}분</span></div>`;
+    if (result.steps && result.steps.length) {
+      html += `<div class="transit-detail">`;
+      result.steps.forEach(step => {
+        const iconClass = step.type === 'subway' ? 'icon-sub' : step.type === 'bus' ? 'icon-bus' : 'icon-walk';
+        let desc = '';
+        if (step.type === 'walk') {
+          desc = step.distance ? `${step.distance}m` : '';
+        } else {
+          desc = `${step.from} → ${step.to}`;
+          if (step.stationCount) desc += ` (${step.stationCount}정거장)`;
+        }
+        html += `
+          <div class="transit-step">
+            <div class="transit-step-icon ${iconClass}">${step.icon}</div>
+            <div class="transit-step-info">
+              <div class="transit-step-name">${escHtml(step.name)}</div>
+              ${desc ? `<div class="transit-step-desc">${escHtml(desc)}</div>` : ''}
+            </div>
+            <div class="transit-step-time">${step.time}분</div>
+          </div>`;
+      });
+      html += `</div>`;
+    }
+    el.innerHTML = html;
+  }
 }
 
 // ══════════════════════════════════════════
@@ -407,10 +560,10 @@ function renderTimeline() {
             <span class="transport-label">이동수단</span>
             ${['도보','대중교통','자동차'].map(t =>
               `<button class="transport-btn ${stop.transport===t?'active-transport':''}"
-                onclick="updateTransport('${stop.id}','${t}',this)">${t}</button>`
+                onclick="changeTransport('${stop.id}','${t}',this)">${t}</button>`
             ).join('')}
           </div>
-          <div class="travel-time-display">
+          <div class="time-info-area">
             <span class="time-badge loading">⏳ 계산 중...</span>
           </div>
         </div>` : ''}
@@ -432,13 +585,9 @@ function renderTimeline() {
     if (i === day.stops.length - 1) return;
     const next = day.stops[i+1];
     if (!s.lat || !next?.lat) return;
-    const key = `${s.lat},${s.lng}|${next.lat},${next.lng}`;
-    if (timeCache[key]) renderBadge(s.id, timeCache[key]);
+    const key = `time_${s.lat},${s.lng}|${next.lat},${next.lng}|${s.transport}`;
+    if (timeCache[key]) renderTimeInfo(s.id, s.transport, timeCache[key]);
   });
-}
-
-function escHtml(s) {
-  return String(s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 }
 
 // ══════════════════════════════════════════
@@ -447,44 +596,60 @@ function escHtml(s) {
 let gTimer = null;
 
 function updateStop(id, key, val) {
-  const day = state.days[state.currentDayIdx];
-  const s = day.stops.find(s => s.id === id);
+  const s = state.days[state.currentDayIdx].stops.find(s => s.id === id);
   if (!s) return;
-  s[key] = val;
-  save(); renderTimeline(); renderMap();
+  s[key] = val; save(); renderTimeline();
 }
 
 function updateStopName(id, val) {
-  const day = state.days[state.currentDayIdx];
-  const s = day.stops.find(s => s.id === id);
+  const s = state.days[state.currentDayIdx].stops.find(s => s.id === id);
   if (!s) return;
-  s.name = val; s.lat = null; s.lng = null;
-  save();
+  s.name = val; s.lat = null; s.lng = null; save();
   clearTimeout(gTimer);
   gTimer = setTimeout(async () => {
     if (!val.trim()) return;
     const c = await geocode(val);
     if (c) {
       s.lat = c.lat; s.lng = c.lng;
-      timeCache = {};
-      save(); renderTimeline(); renderMap(); fetchAllTimes();
+      timeCache = {}; routeCache = {};
+      save(); await drawAllRoutes(); renderTimeline(); fetchAllTimes();
     }
   }, 900);
 }
 
-function updateTransport(id, val, btn) {
-  const day = state.days[state.currentDayIdx];
-  const s = day.stops.find(s => s.id === id);
+async function changeTransport(id, val, btn) {
+  const s = state.days[state.currentDayIdx].stops.find(s => s.id === id);
   if (!s) return;
   s.transport = val; save();
+
+  // 버튼 UI 업데이트
   btn.closest('.transport-btns').querySelectorAll('.transport-btn').forEach(b => {
     b.classList.toggle('active-transport', b.textContent === val);
   });
+
+  // 해당 구간 경로 & 시간 재계산
+  routeCache = {}; // 경로 캐시 초기화 (이동수단 바꼈으니)
+  await drawAllRoutes();
+
+  // 시간 재계산
+  const day = state.days[state.currentDayIdx];
+  const idx = day.stops.findIndex(s => s.id === id);
+  const next = day.stops[idx + 1];
+  if (!s.lat || !next?.lat) return;
+
+  const key = `time_${s.lat},${s.lng}|${next.lat},${next.lng}|${val}`;
+  if (timeCache[key]) { renderTimeInfo(id, val, timeCache[key]); return; }
+
+  renderTimeLoading(id);
+  const result = await fetchTimeByTransport(s, next, val);
+  timeCache[key] = result;
+  renderTimeInfo(id, val, result);
 }
 
 function addStop() {
-  const day = state.days[state.currentDayIdx];
-  day.stops.push({ id: uid(), time: '12:00', name: '', cat: '관광', memo: '', transport: '대중교통', lat: null, lng: null });
+  state.days[state.currentDayIdx].stops.push({
+    id: uid(), time: '12:00', name: '', cat: '관광', memo: '', transport: '대중교통', lat: null, lng: null
+  });
   save(); renderTimeline();
 }
 
@@ -493,8 +658,8 @@ function deleteStop(id) {
   if (day.stops.length <= 1) { alert('최소 1개의 장소가 필요합니다.'); return; }
   if (!confirm('이 장소를 삭제할까요?')) return;
   day.stops = day.stops.filter(s => s.id !== id);
-  timeCache = {};
-  save(); renderTimeline(); renderMap(); fetchAllTimes();
+  timeCache = {}; routeCache = {};
+  save(); drawAllRoutes(); renderTimeline(); fetchAllTimes();
 }
 
 // ══════════════════════════════════════════
@@ -509,16 +674,13 @@ function renderTabs() {
     btn.className = `day-tab ${i === state.currentDayIdx ? 'active' : ''}`;
     btn.textContent = `Day ${i+1}  ${day.date}`;
     btn.onclick = () => {
-      state.currentDayIdx = i;
-      timeCache = {};
+      state.currentDayIdx = i; timeCache = {}; routeCache = {};
       save(); renderTabs(); renderTimeline(); geocodeAll();
     };
     tabs.appendChild(btn);
   });
   const add = document.createElement('button');
-  add.className = 'btn-add-day';
-  add.textContent = '+ 날짜 추가';
-  add.onclick = openModal;
+  add.className = 'btn-add-day'; add.textContent = '+ 날짜 추가'; add.onclick = openModal;
   tabs.appendChild(add);
 }
 
@@ -530,12 +692,9 @@ function closeModal() { document.getElementById('dateModal').classList.remove('s
 function confirmAddDay() {
   const date = document.getElementById('newDateInput').value;
   if (!date) return;
-  state.days.push({
-    date,
-    stops: [{ id: uid(), time: '09:00', name: '', cat: '관광', memo: '', transport: '대중교통', lat: null, lng: null }]
-  });
+  state.days.push({ date, stops: [{ id: uid(), time: '09:00', name: '', cat: '관광', memo: '', transport: '대중교통', lat: null, lng: null }] });
   state.currentDayIdx = state.days.length - 1;
-  timeCache = {};
+  timeCache = {}; routeCache = {};
   save(); renderTabs(); renderTimeline(); closeModal();
 }
 
@@ -552,8 +711,7 @@ function exportCSV() {
   const csv = rows.map(r => r.map(v => `"${String(v).replace(/"/g,'""')}"`).join(',')).join('\n');
   const a = document.createElement('a');
   a.href = URL.createObjectURL(new Blob(['\uFEFF'+csv], { type: 'text/csv;charset=utf-8;' }));
-  a.download = '여행일정.csv';
-  a.click();
+  a.download = '여행일정.csv'; a.click();
 }
 
 // ══════════════════════════════════════════
